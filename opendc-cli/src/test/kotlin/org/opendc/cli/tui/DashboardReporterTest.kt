@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
 import org.opendc.cli.config.CliConfig
 import org.opendc.cli.progress.ExperimentProgress
+import org.opendc.cli.run.Parallelism
 import org.opendc.cli.run.SimulationOverview
 import java.nio.file.Path
 import kotlin.test.Test
@@ -50,7 +51,7 @@ class DashboardReporterTest {
             workloads = 1,
             policies = 1,
             totalTasks = 4,
-            parallelism = 1,
+            parallelism = Parallelism.Local(1),
             output = Path.of("output"),
             inputRoot = Path.of("."),
         )

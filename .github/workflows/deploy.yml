@@ -29,8 +29,7 @@ jobs:
           ssh -i ../opendc.key opendc@opendc.org bash << 'EOF'
           cd /opt/opendc
           source .env
-          echo "OPENDC_WEB_API_VERSION=$OPENDC_WEB_API_VERSION"
-          echo "OPENDC_RUNNER_VERSION=$OPENDC_RUNNER_VERSION"
+          echo "OPENDC_VERSION=$OPENDC_VERSION"
           echo "OPENDC_WEBSITE_VERSION=$OPENDC_WEBSITE_VERSION"
           EOF
       - name: Pull Images

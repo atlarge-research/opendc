@@ -44,9 +44,8 @@ signing {
         } else {
             useInMemoryPgpKeys(signingKey, signingPassword)
         }
+        sign(publishing.publications)
     }
-
-    sign(publishing.publications)
 }
 
 publishing {

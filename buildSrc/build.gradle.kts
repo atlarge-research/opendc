@@ -39,5 +39,6 @@ dependencies {
     implementation(libs.dokka.gradle)
 
     implementation(libs.quarkus.gradle.application)
-    implementation(libs.quarkus.gradle.extension)
+
+    implementation(libs.gradle.node)
 }

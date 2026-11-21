@@ -1,0 +1,23 @@
+# The app and its API on one host. Only port 8080 is routed: health checks and metrics on 9000 stay
+# inside the cluster. Set the host, the class and the TLS secret for your cluster.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: opendc
+  namespace: opendc
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: ["opendc.example.org"]
+      secretName: opendc-tls
+  rules:
+    - host: opendc.example.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: opendc-server
+                port:
+                  name: http

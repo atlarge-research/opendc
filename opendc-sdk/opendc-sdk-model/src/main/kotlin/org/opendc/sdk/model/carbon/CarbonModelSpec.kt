@@ -32,6 +32,8 @@ import kotlinx.serialization.json.buildJsonObject
 import mu.KotlinLogging
 import org.opendc.common.units.Timestamp
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.resource.ResourceRole
+import org.opendc.sdk.model.resource.ResourceUse
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.validateEach
@@ -41,6 +43,16 @@ import org.opendc.sdk.model.validation.validateEach
 public sealed interface CarbonModelSpec : Validatable {
     override fun validate(): List<ValidationIssue> = emptyList()
 }
+
+/** This model with the trace it reads, if any, replaced by what [transform] makes of it. */
+internal fun CarbonModelSpec.mapReferences(
+    path: String,
+    transform: (ResourceUse) -> ResourceReference,
+): CarbonModelSpec =
+    when (this) {
+        is TraceBasedCarbonSpec -> copy(source = transform(ResourceUse(ResourceRole.CARBON, "$path.source", source)))
+        is InlineTraceBasedCarbonSpec -> this
+    }
 
 /** A carbon intensity read from an external carbon trace. */
 @Serializable

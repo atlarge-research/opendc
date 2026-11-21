@@ -7,14 +7,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  push-simulator:
-    name: Push Simulator to DockerHub
+  push-images:
+    name: Push ${{ matrix.image }} image to GitHub Packages
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        image: [ server, launcher ]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Build distribution
+        run: ./gradlew :opendc-web:opendc-web-${{ matrix.image }}:installDist
       - name: Prepare
         id: prep
         run: |
-          DOCKER_IMAGE=ghcr.io/atlarge-research/opendc
+          DOCKER_IMAGE=ghcr.io/atlarge-research/opendc-${{ matrix.image }}
           VERSION=3.0-SNAPSHOT
           TAGS="${DOCKER_IMAGE}:${VERSION}"
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
@@ -28,38 +42,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push to Docker Hub
+      - name: Push to GitHub Packages
         uses: docker/build-push-action@v7
         with:
           push: true
-          file: opendc-web/opendc-web-runner/Dockerfile
-          tags: ${{ steps.prep.outputs.tags }}
-  push-api:
-    name: Push API to DockerHub
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Prepare
-        id: prep
-        run: |
-          DOCKER_IMAGE=ghcr.io/atlarge-research/opendc-web-api
-          VERSION=3.0-SNAPSHOT
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-            TAGS="${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:latest"
-          fi
-          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-      - name: Login to DockerHub
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push to Docker Hub
-        uses: docker/build-push-action@v7
-        with:
-          push: true
-          file: opendc-web/opendc-web-server/Dockerfile
+          context: .
+          file: opendc-web/opendc-web-${{ matrix.image }}/Dockerfile
           tags: ${{ steps.prep.outputs.tags }}
   publish-maven-central:
     name: Publish to Maven Central

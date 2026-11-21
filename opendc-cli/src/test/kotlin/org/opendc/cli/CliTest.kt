@@ -24,6 +24,8 @@ package org.opendc.cli
 
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.testing.test
+import org.opendc.cli.run.FakeOpendcServer
+import org.opendc.cli.run.SubmitAnswer
 import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
@@ -73,10 +75,35 @@ class CliTest {
     }
 
     @Test
-    fun `run rejects the not-yet-implemented --api-url with a clean error`() {
-        val result = opendc().test(listOf("run", tiny, "--api-url", "http://example.com", "--no-progress"))
-        assertEquals(1, result.statusCode)
-        assertContains(result.output, "not implemented")
+    fun `run --api-url runs on the server and writes its results locally`() {
+        val out = createTempDirectory("opendc-cli-remote")
+        try {
+            FakeOpendcServer(runningPolls = 0).use { server ->
+                val result = opendc().test(listOf("run", tiny, "--api-url", server.url, "-o", out.toString(), "--no-progress"))
+                assertEquals(0, result.statusCode, result.output)
+                assertTrue(out.resolve("tiny/raw-output/0/seed=0/host.parquet").toFile().exists())
+            }
+        } finally {
+            out.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `run --api-url exits 2 with the server's issues when it refuses the experiment`() {
+        FakeOpendcServer(submit = SubmitAnswer.Refuse("workloads[0]", "no trace called nightly")).use { server ->
+            val result = opendc().test(listOf("run", tiny, "--api-url", server.url, "--no-progress"))
+            assertEquals(2, result.statusCode, result.output)
+            assertContains(result.stderr, "no trace called nightly")
+        }
+    }
+
+    @Test
+    fun `run --api-url exits 1 naming each failed scenario`() {
+        FakeOpendcServer(finalState = "failed", runningPolls = 0).use { server ->
+            val result = opendc().test(listOf("run", tiny, "--api-url", server.url, "--no-progress"))
+            assertEquals(1, result.statusCode, result.output)
+            assertContains(result.stderr, "scenario 0: simulationError")
+        }
     }
 
     /** An experiment composed from other files with `importFrom` runs like any other. */

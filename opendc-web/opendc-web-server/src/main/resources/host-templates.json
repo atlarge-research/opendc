@@ -1,0 +1,142 @@
+[
+    {
+        "id": "compute-epyc",
+        "label": "Compute (2x EPYC 7502, 256 GiB)",
+        "group": "Compute",
+        "host": {
+            "name": "Compute node",
+            "cpu": {
+                "coreCount": 32,
+                "coreSpeed": "3.2 GHz",
+                "count": 2,
+                "vendor": "AMD",
+                "modelName": "EPYC 7502",
+                "architecture": "Zen2"
+            },
+            "memory": {
+                "size": "256 GiB",
+                "speed": "3.2 GHz",
+                "vendor": "Samsung",
+                "modelName": "DDR4-3200"
+            },
+            "cpuPowerModel": {
+                "type": "linear",
+                "maxPower": "400 Watts",
+                "idlePower": "120 Watts"
+            }
+        }
+    },
+    {
+        "id": "compute-xeon",
+        "label": "General purpose (2x Xeon 6248, 192 GiB)",
+        "group": "Compute",
+        "host": {
+            "name": "General purpose node",
+            "cpu": {
+                "coreCount": 20,
+                "coreSpeed": "2.5 GHz",
+                "count": 2,
+                "vendor": "Intel",
+                "modelName": "Xeon Gold 6248",
+                "architecture": "Cascade Lake"
+            },
+            "memory": {
+                "size": "192 GiB",
+                "speed": "2.933 GHz"
+            },
+            "cpuPowerModel": {
+                "type": "square",
+                "maxPower": "300 Watts",
+                "idlePower": "90 Watts"
+            }
+        }
+    },
+    {
+        "id": "memory-node",
+        "label": "Memory optimised (1 TiB)",
+        "group": "Compute",
+        "host": {
+            "name": "Memory optimised node",
+            "cpu": {
+                "coreCount": 24,
+                "coreSpeed": "2.9 GHz",
+                "count": 2,
+                "vendor": "Intel",
+                "modelName": "Xeon Gold 6248R"
+            },
+            "memory": {
+                "size": "1 TiB",
+                "speed": "2.933 GHz"
+            },
+            "cpuPowerModel": {
+                "type": "linear",
+                "maxPower": "350 Watts",
+                "idlePower": "140 Watts"
+            }
+        }
+    },
+    {
+        "id": "gpu-a100",
+        "label": "GPU (4x A100 40 GiB)",
+        "group": "Accelerated",
+        "host": {
+            "name": "GPU node",
+            "cpu": {
+                "coreCount": 64,
+                "coreSpeed": "2.6 GHz",
+                "count": 2,
+                "vendor": "AMD",
+                "modelName": "EPYC 7742"
+            },
+            "memory": {
+                "size": "512 GiB"
+            },
+            "gpu": {
+                "coreCount": 6912,
+                "coreSpeed": "1.4 GHz",
+                "count": 4,
+                "memory": "40 GiB",
+                "memoryBandwidth": "1600 GBps",
+                "vendor": "NVIDIA",
+                "modelName": "A100",
+                "architecture": "Ampere",
+                "virtualizationOverhead": {
+                    "type": "constant",
+                    "percentageOverhead": 5
+                }
+            },
+            "cpuPowerModel": {
+                "type": "square",
+                "maxPower": "500 Watts",
+                "idlePower": "150 Watts"
+            },
+            "gpuPowerModel": {
+                "type": "cubic",
+                "maxPower": "400 Watts",
+                "idlePower": "100 Watts"
+            }
+        }
+    },
+    {
+        "id": "edge-node",
+        "label": "Edge (8 core, 32 GiB)",
+        "group": "Edge",
+        "host": {
+            "name": "Edge node",
+            "cpu": {
+                "coreCount": 8,
+                "coreSpeed": "3.7 GHz",
+                "vendor": "Intel",
+                "modelName": "Xeon E-2288G"
+            },
+            "memory": {
+                "size": "32 GiB"
+            },
+            "cpuPowerModel": {
+                "type": "linear",
+                "maxPower": "95 Watts",
+                "idlePower": "25 Watts"
+            }
+        }
+    }
+]

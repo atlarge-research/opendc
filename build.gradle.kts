@@ -25,9 +25,6 @@ plugins {
     `jacoco-aggregation`
 }
 
-group = "org.opendc"
-version = "3.0-SNAPSHOT"
-
 dependencies {
     // Dokka 2 (DGP v2) dropped the automatic `dokkaHtmlMultiModule` aggregation: the aggregating
     // project must consume each documented module explicitly. Register every subproject that applies

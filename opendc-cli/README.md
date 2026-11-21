@@ -8,13 +8,12 @@ executable that runs, validates and inspects experiment files.
 Build a runnable distribution and put it on your `PATH`:
 
 ```bash
-./gradlew :opendc-cli:distTar
-tar -xf opendc-cli/build/distributions/OpenDCExperimentRunner.tar -C opendc-cli/build/distributions
-export PATH=$PATH:$(realpath opendc-cli/build/distributions/OpenDCExperimentRunner/bin)
+./gradlew :opendc-cli:installDist
+export PATH=$PATH:$(realpath opendc-cli/build/install/OpenDCExperimentRunner/bin)
 ```
 
-You can now call `opendc` from anywhere. Re-run the two commands above after code changes to refresh
-the binary.
+You can now call `opendc` from anywhere. Re-run `installDist` after code changes to refresh the
+binary.
 
 ## Experiment file
 
@@ -139,6 +138,28 @@ dashboard. Common options:
 ```bash
 opendc run experiment.json -o results -p 4
 ```
+
+### Running on a server
+
+`--api-url` runs the experiment on an OpenDC server instead of this machine, follows its progress in
+the same dashboard, and downloads the results into `--output` in the layout a local run writes:
+
+```bash
+OPENDC_TOKEN=odc_pat_... opendc run experiment.json --api-url https://opendc.example.org -o results
+```
+
+```
+    --api-url <url>       The server to run on.
+    --project <id>        The project to run in (default: one called "opendc-cli", created once).
+    --token <token>       A personal access token, also read from OPENDC_TOKEN. A server that signs
+                          nobody in needs none.
+```
+
+The server checks the experiment as the web app would, so a workload has to name a trace the server
+knows: one it ships, such as `bitbrains-small`, or one in your library by its full name
+(`alice/nightly`). Local trace files are not uploaded. The exit status is 0 when every scenario
+succeeded, 2 when the server refused the experiment (its reasons are printed), and 1 when a run
+failed; interrupting the command cancels the experiment on the server.
 
 ### Option placement (a common trap)
 

@@ -70,6 +70,7 @@ internal data class CliConfig(
                                 topologies = "topologies",
                                 workloads = "workloads",
                                 parallelism = "parallelism",
+                                serverParallelism = "set by the server",
                                 policies = "policies",
                                 tasks = "tasks",
                                 output = "output",
@@ -140,6 +141,8 @@ internal data class FactLabels(
     val topologies: String,
     val workloads: String,
     val parallelism: String,
+    /** What the parallelism reads as for a run on a server, whose platform decides it. */
+    val serverParallelism: String,
     val policies: String,
     val tasks: String,
     val output: String,

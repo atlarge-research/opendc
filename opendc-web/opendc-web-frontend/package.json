@@ -1,0 +1,56 @@
+{
+    "name": "opendc-web-frontend",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=20"
+    },
+    "packageManager": "pnpm@11.3.0",
+    "scripts": {
+        "dev": "next dev --turbopack",
+        "build": "next build",
+        "start": "next start",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "lint": "biome check .",
+        "format": "biome check --write ."
+    },
+    "dependencies": {
+        "@auth0/auth0-react": "^2.3.0",
+        "@mantine/charts": "^8.3.18",
+        "@mantine/core": "^8.3.18",
+        "@mantine/dates": "^8.3.18",
+        "@mantine/form": "^8.3.18",
+        "@mantine/hooks": "^8.3.18",
+        "@mantine/modals": "^8.3.18",
+        "@mantine/notifications": "^8.3.18",
+        "@tabler/icons-react": "^3.0.0",
+        "@tanstack/react-query": "^5.0.0",
+        "dayjs": "^1.11.13",
+        "konva": "^9.3.0",
+        "next": "^16.2.11",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-konva": "^19.0.0",
+        "recharts": "^2.15.4",
+        "zod": "^3.24.0",
+        "zustand": "^5.0.0"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^1.9.4",
+        "@testing-library/jest-dom": "^6.6.0",
+        "@testing-library/react": "^16.0.0",
+        "@testing-library/user-event": "^14.5.0",
+        "@types/node": "^22.0.0",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "@vitejs/plugin-react": "^4.3.0",
+        "jsdom": "^26.0.0",
+        "postcss": "^8.4.0",
+        "postcss-preset-mantine": "^1.17.0",
+        "postcss-simple-vars": "^7.0.0",
+        "typescript": "^5.6.0",
+        "vitest": "^3.0.0"
+    }
+}

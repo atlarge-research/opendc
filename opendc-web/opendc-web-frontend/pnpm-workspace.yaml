@@ -1,0 +1,10 @@
+allowBuilds:
+  "@biomejs/biome": true
+  browser-tabs-lock: true
+  esbuild: true
+  sharp: true
+onlyBuiltDependencies:
+  - "@biomejs/biome"
+  - browser-tabs-lock
+  - esbuild
+  - sharp

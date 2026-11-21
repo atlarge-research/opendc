@@ -1,0 +1,45 @@
+# Live progress while a run is going. It is a preview that expires, so nothing is persisted and a
+# restart only blanks the progress bars until the next report.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opendc-redis
+  namespace: opendc
+  labels:
+    app.kubernetes.io/name: opendc-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opendc-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: opendc-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          args: ["redis-server", "--save", "", "--appendonly", "no"]
+          ports:
+            - name: redis
+              containerPort: 6379
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opendc-redis
+  namespace: opendc
+spec:
+  selector:
+    app.kubernetes.io/name: opendc-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis

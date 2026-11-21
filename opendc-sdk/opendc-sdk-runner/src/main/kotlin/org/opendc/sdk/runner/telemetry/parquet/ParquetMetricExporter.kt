@@ -22,6 +22,7 @@
 
 package org.opendc.sdk.runner.telemetry.parquet
 
+import org.opendc.sdk.model.telemetry.MetaFile
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.runner.telemetry.MetricExporter
 import org.opendc.sdk.runner.telemetry.table.battery.BatterySample
@@ -88,7 +89,7 @@ public class ParquetMetricExporter(
         val directory = metaDirectory ?: return
         directory.mkdirs()
 
-        writeMeta(File(directory, "simulation.parquet"), MetaColumns.SIMULATION, listOf(meta))
+        writeMeta(File(directory, MetaFile.SIMULATION.fileName), MetaColumns.SIMULATION, listOf(meta))
     }
 
     override fun export(meta: TopologyMeta) {
@@ -97,11 +98,11 @@ public class ParquetMetricExporter(
 
         val gpuCount = meta.hosts.maxOfOrNull { it.gpuCapacities.size } ?: 0
 
-        writeMeta(File(directory, "dataCenter.parquet"), MetaColumns.DATA_CENTER, meta.dataCenters)
-        writeMeta(File(directory, "cluster.parquet"), MetaColumns.CLUSTER, meta.clusters)
-        writeMeta(File(directory, "host.parquet"), MetaColumns.host(gpuCount), meta.hosts)
-        writeMeta(File(directory, "powerSource.parquet"), MetaColumns.POWER_SOURCE, meta.powerSources)
-        writeMeta(File(directory, "battery.parquet"), MetaColumns.BATTERY, meta.batteries)
+        writeMeta(File(directory, MetaFile.DATA_CENTER.fileName), MetaColumns.DATA_CENTER, meta.dataCenters)
+        writeMeta(File(directory, MetaFile.CLUSTER.fileName), MetaColumns.CLUSTER, meta.clusters)
+        writeMeta(File(directory, MetaFile.HOST.fileName), MetaColumns.host(gpuCount), meta.hosts)
+        writeMeta(File(directory, MetaFile.POWER_SOURCE.fileName), MetaColumns.POWER_SOURCE, meta.powerSources)
+        writeMeta(File(directory, MetaFile.BATTERY.fileName), MetaColumns.BATTERY, meta.batteries)
     }
 
     override fun export(meta: TaskMeta) {
@@ -213,7 +214,7 @@ public class ParquetMetricExporter(
             val batteryExporter =
                 if (filesToExport[OutputFileSpec.BATTERY] == true) {
                     Exporter(
-                        outputFile = File(base, "$partition/battery.parquet").also { it.parentFile.mkdirs() },
+                        outputFile = File(base, "$partition/${OutputFileSpec.BATTERY.fileName}").also { it.parentFile.mkdirs() },
                         columns = batteryExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                     )
@@ -224,7 +225,7 @@ public class ParquetMetricExporter(
             val clusterExporter =
                 if (filesToExport[OutputFileSpec.CLUSTER] == true) {
                     Exporter(
-                        outputFile = File(base, "$partition/cluster.parquet").also { it.parentFile.mkdirs() },
+                        outputFile = File(base, "$partition/${OutputFileSpec.CLUSTER.fileName}").also { it.parentFile.mkdirs() },
                         columns = clusterExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                     )
@@ -235,7 +236,7 @@ public class ParquetMetricExporter(
             val dataCenterExporter =
                 if (filesToExport[OutputFileSpec.DATA_CENTER] == true) {
                     Exporter(
-                        outputFile = File(base, "$partition/dataCenter.parquet").also { it.parentFile.mkdirs() },
+                        outputFile = File(base, "$partition/${OutputFileSpec.DATA_CENTER.fileName}").also { it.parentFile.mkdirs() },
                         columns = dataCenterExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                     )
@@ -246,7 +247,7 @@ public class ParquetMetricExporter(
             val hostExporter =
                 if (filesToExport[OutputFileSpec.HOST] == true) {
                     Exporter(
-                        outputFile = File(base, "$partition/host.parquet").also { it.parentFile.mkdirs() },
+                        outputFile = File(base, "$partition/${OutputFileSpec.HOST.fileName}").also { it.parentFile.mkdirs() },
                         columns = hostExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                         writerThreads = writerThreads,
@@ -260,7 +261,7 @@ public class ParquetMetricExporter(
             val powerSourceExporter =
                 if (filesToExport[OutputFileSpec.POWER_SOURCE] == true) {
                     Exporter(
-                        outputFile = File(base, "$partition/powerSource.parquet").also { it.parentFile.mkdirs() },
+                        outputFile = File(base, "$partition/${OutputFileSpec.POWER_SOURCE.fileName}").also { it.parentFile.mkdirs() },
                         columns = powerSourceExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                     )
@@ -271,7 +272,7 @@ public class ParquetMetricExporter(
             val serviceExporter =
                 if (filesToExport[OutputFileSpec.SERVICE] == true) {
                     Exporter(
-                        outputFile = File(base, "$partition/service.parquet").also { it.parentFile.mkdirs() },
+                        outputFile = File(base, "$partition/${OutputFileSpec.SERVICE.fileName}").also { it.parentFile.mkdirs() },
                         columns = serviceExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                     )
@@ -282,7 +283,7 @@ public class ParquetMetricExporter(
             val taskExporter =
                 if (filesToExport[OutputFileSpec.TASK] == true) {
                     Exporter(
-                        outputFile = File(base, "$partition/task.parquet").also { it.parentFile.mkdirs() },
+                        outputFile = File(base, "$partition/${OutputFileSpec.TASK.fileName}").also { it.parentFile.mkdirs() },
                         columns = taskExportColumns ?: Exportable.getAllLoadedColumns(),
                         bufferSize = bufferSize,
                         writerThreads = writerThreads,
@@ -296,7 +297,7 @@ public class ParquetMetricExporter(
             val taskMetaExporter =
                 if (filesToExport[OutputFileSpec.TASK] == true) {
                     Exporter(
-                        outputFile = File(base, "$partition/meta/task.parquet").also { it.parentFile.mkdirs() },
+                        outputFile = File(base, "$partition/${MetaFile.TASK.path}").also { it.parentFile.mkdirs() },
                         columns = MetaColumns.TASK,
                         bufferSize = bufferSize,
                     )
@@ -313,7 +314,7 @@ public class ParquetMetricExporter(
                 serviceExporter = serviceExporter,
                 taskExporter = taskExporter,
                 taskMetaExporter = taskMetaExporter,
-                metaDirectory = File(base, "$partition/meta"),
+                metaDirectory = File(base, "$partition/${MetaFile.DIRECTORY}"),
             )
         }
     }

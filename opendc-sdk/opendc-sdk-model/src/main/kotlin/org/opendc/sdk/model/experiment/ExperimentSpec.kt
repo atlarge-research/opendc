@@ -26,15 +26,20 @@ import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.failure.mapReferences
+import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.resource.ResourceUse
 import org.opendc.sdk.model.scenario.ScenarioSpec
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
 import org.opendc.sdk.model.scheduler.PrefabAllocationPolicySpec
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.TopologySpec
+import org.opendc.sdk.model.topology.mapReferences
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.validateEach
 import org.opendc.sdk.model.workload.WorkloadSpec
+import org.opendc.sdk.model.workload.mapReferences
 
 /**
  * A design of experiments: a set of choices per axis whose cartesian product yields the [ScenarioSpec]s to run.
@@ -78,4 +83,31 @@ public data class ExperimentSpec(
             addAll(checkpointModels.filterNotNull().validateEach("checkpointModels"))
             maxNumFailures.forEach { if (it < 1) add(ValidationIssue("maxNumFailures", "must be >= 1")) }
         }
+
+    /** Every place this experiment refers to a resource, in the order [mapReferences] visits them. */
+    public fun references(): List<ResourceUse> =
+        buildList {
+            mapReferences { use ->
+                add(use)
+                use.reference
+            }
+        }
+
+    /**
+     * This experiment with every resource reference replaced by what [transform] makes of it and every
+     * other field left as it is. Workloads are visited first, then failure models, then topologies.
+     */
+    public fun mapReferences(transform: (ResourceUse) -> ResourceReference): ExperimentSpec =
+        copy(
+            workloads =
+                workloads.mapIndexedTo(
+                    LinkedHashSet(),
+                ) { index, workload -> workload.mapReferences("workloads[$index]", transform) },
+            failureModels =
+                failureModels.mapIndexedTo(LinkedHashSet()) { index, failure -> failure.mapReferences("failureModels[$index]", transform) },
+            topologies =
+                topologies.mapIndexedTo(
+                    LinkedHashSet(),
+                ) { index, topology -> topology.mapReferences("topologies[$index]", transform) },
+        )
 }

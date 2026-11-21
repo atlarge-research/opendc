@@ -96,6 +96,7 @@ internal object CliConfigLoader {
                             topologies = str("label.topologies", d.panels.labels.topologies),
                             workloads = str("label.workloads", d.panels.labels.workloads),
                             parallelism = str("label.parallelism", d.panels.labels.parallelism),
+                            serverParallelism = str("label.parallelism.server", d.panels.labels.serverParallelism),
                             policies = str("label.policies", d.panels.labels.policies),
                             tasks = str("label.tasks", d.panels.labels.tasks),
                             output = str("label.output", d.panels.labels.output),

@@ -1,0 +1,98 @@
+# The server: the API, the frontend it serves from the same origin, and the dispatcher that creates
+# one Job per execution. Its pods are deliberately not labelled app.kubernetes.io/managed-by=opendc-web,
+# which is the label the dispatcher selects its own Jobs and pods by.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opendc-server
+  namespace: opendc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opendc-server
+  namespace: opendc
+  labels:
+    app.kubernetes.io/name: opendc-server
+spec:
+  # One replica: the execution loop coordinates through Postgres, but the download signing key in
+  # secrets.env has to be shared before a second replica can serve links the first one signed.
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opendc-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: opendc-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+        prometheus.io/path: /q/metrics
+    spec:
+      serviceAccountName: opendc-server
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: server
+          image: ghcr.io/atlarge-research/opendc-server
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: opendc-server-config
+            - secretRef:
+                name: opendc-server-secrets
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: management
+              containerPort: 9000
+          # Flyway migrates the schema before the server answers, so the first start may take a while.
+          startupProbe:
+            httpGet:
+              path: /q/health/started
+              port: management
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: management
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: management
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opendc-server
+  namespace: opendc
+  labels:
+    app.kubernetes.io/name: opendc-server
+spec:
+  selector:
+    app.kubernetes.io/name: opendc-server
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: management
+      port: 9000
+      targetPort: management

@@ -47,7 +47,7 @@ dependencies {
 // Tests log through Log4j with one shared config. Quarkus modules are left out: they log through
 // JBoss LogManager, and a second SLF4J provider on the classpath conflicts with it.
 afterEvaluate {
-    if (!plugins.hasPlugin("io.quarkus") && !plugins.hasPlugin("io.quarkus.extension")) {
+    if (!plugins.hasPlugin("io.quarkus")) {
         val versionCatalog = project.defaultVersionCatalog
 
         dependencies {

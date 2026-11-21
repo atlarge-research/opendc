@@ -1,0 +1,56 @@
+# Keeps traces and results in an S3 bucket and live progress in Redis, which is what several servers
+# would share. MinIO stands in for the bucket.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.s3.yml up -d
+#
+# Browsers upload traces straight to the bucket, so its port is published, and the server signs
+# their uploads for OPENDC_PUBLIC_S3_ENDPOINT rather than the address it reaches MinIO at itself.
+services:
+  server:
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    environment:
+      OPENDC_STORAGE_KIND: s3
+      OPENDC_STORAGE_S3_BUCKET: opendc
+      OPENDC_STORAGE_S3_ENDPOINT: http://minio:9000
+      OPENDC_STORAGE_S3_PUBLIC_ENDPOINT: ${OPENDC_PUBLIC_S3_ENDPOINT:-http://localhost:9000}
+      OPENDC_STORAGE_S3_ACCESS_KEY: opendc
+      OPENDC_STORAGE_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+      OPENDC_TELEMETRY_KIND: redis
+      QUARKUS_REDIS_HOSTS: redis://redis:6379
+
+  minio:
+    image: minio/minio:RELEASE.2025-06-13T11-33-47Z
+    restart: on-failure
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: opendc
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports:
+      - "${OPENDC_S3_PORT:-9000}:9000"
+    volumes:
+      - minio-data:/data
+
+  # The MinIO image carries its own client, so creating the bucket needs no second image.
+  minio-init:
+    image: minio/minio:RELEASE.2025-06-13T11-33-47Z
+    depends_on:
+      - minio
+    environment:
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    entrypoint:
+      - sh
+      - -c
+      - until mc alias set local http://minio:9000 opendc "$$MINIO_ROOT_PASSWORD"; do sleep 1; done && mc mb --ignore-existing local/opendc
+
+  # Live samples are a preview that expires, so nothing is persisted.
+  redis:
+    image: redis:7-alpine
+    restart: on-failure
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+volumes:
+  minio-data:

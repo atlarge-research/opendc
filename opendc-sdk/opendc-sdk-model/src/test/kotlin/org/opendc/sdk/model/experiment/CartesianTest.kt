@@ -160,4 +160,42 @@ class CartesianTest {
         assertEquals(0, scenarios.single().id)
         assertEquals("0", scenarios.single().name)
     }
+
+    @Test
+    fun `expand orders scenarios mixed-radix with topologies most significant`() {
+        val t0 = topology("t0")
+        val t1 = topology("t1")
+        val w0 = workload("w0")
+        val w1 = workload("w1")
+
+        val experiment =
+            ExperimentSpec(
+                topologies = setOf(t0, t1),
+                workloads = setOf(w0, w1),
+                maxNumFailures = setOf(5, 10),
+            )
+
+        val scenarios = experiment.expand()
+
+        // Ordering is contractual (D7, Cartesian.kt KDoc): maxNumFailures varies fastest (least
+        // significant), topologies slowest (most significant). A silent reorder would corrupt
+        // executions because the flattened index identifies the work shard.
+        val observed = scenarios.map { Triple(it.topology, it.workload, it.maxNumFailures) }
+        val expected =
+            listOf(
+                Triple(t0, w0, 5),
+                Triple(t0, w0, 10),
+                Triple(t0, w1, 5),
+                Triple(t0, w1, 10),
+                Triple(t1, w0, 5),
+                Triple(t1, w0, 10),
+                Triple(t1, w1, 5),
+                Triple(t1, w1, 10),
+            )
+        assertEquals(expected, observed)
+
+        // The scenario id is exactly the flattened index — the work-shard identity under Indexed
+        // Jobs / SLURM arrays (SCENARIO_INDEX selects expand()[index]).
+        assertEquals((0 until 8).toList(), scenarios.map { it.id })
+    }
 }

@@ -26,13 +26,18 @@ import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.failure.mapReferences
+import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.resource.ResourceUse
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.TopologySpec
+import org.opendc.sdk.model.topology.mapReferences
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.prefixed
 import org.opendc.sdk.model.workload.WorkloadSpec
+import org.opendc.sdk.model.workload.mapReferences
 
 /**
  * A single, fully-resolved simulation configuration ready to be executed.
@@ -73,4 +78,25 @@ public data class ScenarioSpec(
             addAll(failureModel.validate().prefixed("failureModel"))
             checkpointModel?.let { addAll(it.validate().prefixed("checkpointModel")) }
         }
+
+    /** Every place this scenario refers to a resource, in the order [mapReferences] visits them. */
+    public fun references(): List<ResourceUse> =
+        buildList {
+            mapReferences { use ->
+                add(use)
+                use.reference
+            }
+        }
+
+    /**
+     * This scenario with every resource reference replaced by what [transform] makes of it and every
+     * other field left as it is. The workload is visited first, then the failure model, then the
+     * topology.
+     */
+    public fun mapReferences(transform: (ResourceUse) -> ResourceReference): ScenarioSpec =
+        copy(
+            workload = workload.mapReferences("workload", transform),
+            failureModel = failureModel.mapReferences("failureModel", transform),
+            topology = topology.mapReferences("topology", transform),
+        )
 }
