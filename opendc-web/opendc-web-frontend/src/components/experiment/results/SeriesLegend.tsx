@@ -7,7 +7,7 @@ export interface LegendEntry {
     color: string
 }
 
-// Hovering or focusing a name isolates its line, since colour alone stops telling many runs apart.
+// Hovering or focusing a name isolates its line, because colour alone cannot tell many runs apart.
 export function SeriesLegend({
     entries,
     isolated,

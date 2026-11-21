@@ -73,6 +73,7 @@ internal fun launch(
         } finally {
             workDir.toFile().deleteRecursively()
         }
+
     writePeakMemory(reportDir.resolve(PEAK_MEMORY_FILE))
     return code
 }
@@ -81,6 +82,7 @@ private fun readManifest(url: String): LaunchManifest {
     if (url.isEmpty()) {
         throw LaunchFailure(EXIT_INVALID_SPEC, "$MANIFEST_URL_VARIABLE is not set")
     }
+
     var text = ""
     fetch(url) { text = it.readBytes().decodeToString() }
     return try {
@@ -116,6 +118,7 @@ private fun run(
                 pool.shutdownNow()
             }
         }
+
     return when {
         reports.any { it is UnitReport.Unpublished } -> EXIT_TRANSFER_FAILED
         reports.any { it is UnitReport.Published && it.outcome is UnitOutcome.Failed } -> EXIT_UNITS_FAILED
@@ -144,6 +147,7 @@ private fun runUnit(
         if (outcome is UnitOutcome.Failed) {
             logger.warn { "The unit failed: ${outcome.message}" }
         }
+
         return try {
             val body = SdkJson.json.encodeToString(UnitOutcome.serializer(), outcome).encodeToByteArray()
             publish(Payload(body.size.toLong()) { body.inputStream() }, unit.outcome)
@@ -167,6 +171,7 @@ private fun simulate(
     if (issues.isNotEmpty()) {
         return UnitOutcome.Failed(UnitFailure.INVALID_SPEC, issues.joinToString { "${it.path} ${it.message}" }.take(MESSAGE_CAP))
     }
+
     val output = workDir.resolve("output").resolve("${scenario.id}").resolve("${scenario.seed}")
     val started = System.nanoTime()
     return try {
@@ -180,6 +185,7 @@ private fun simulate(
                 .build()
                 .simulate(RUN, listOf(scenario))
         val seconds = (System.nanoTime() - started) / 1e9
+
         val written = report.runs.firstNotNullOfOrNull { it.outputPath }
         for (target in unit.outputs) {
             val file = written?.resolve(target.file)
@@ -256,6 +262,7 @@ private fun peakMemory(): PeakMemory {
     if (!status.exists()) {
         return PeakMemory.Unmeasured
     }
+
     val residentKb =
         status.readLines().firstOrNull { it.startsWith("VmHWM:") }?.split(Regex("\\s+"))?.getOrNull(1)?.toDoubleOrNull()
             ?: return PeakMemory.Unmeasured

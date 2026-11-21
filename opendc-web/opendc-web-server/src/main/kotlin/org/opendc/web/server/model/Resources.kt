@@ -125,6 +125,7 @@ class Trace : PanacheEntityBase {
             trace.createdAt = at
             trace.updatedAt = at
             trace.persist()
+
             return trace
         }
 
@@ -171,8 +172,7 @@ class TracePart : PanacheEntityBase {
 
 /**
  * A trace shared with one person. The grant governs whether the trace appears in their library and
- * whether they may reference it in a new experiment; experiments already submitted pin the content
- * and are unaffected when it is revoked.
+ * whether they may reference it in a new experiment; revoking it leaves submitted experiments alone.
  */
 @Entity
 @Table(name = "trace_grants")

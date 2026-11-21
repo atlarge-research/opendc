@@ -1,7 +1,7 @@
 import type { LegendEntry } from "@/components/experiment/results/SeriesLegend"
 import { downloadBlob } from "@/components/util/download"
 
-/** What a saved chart carries besides the plot: its title, caption and legend are drawn outside the SVG. */
+/** The text around a saved chart: its title, caption and legend are not part of the plot's SVG. */
 export interface ChartImage {
     title: string
     caption: string
@@ -19,7 +19,7 @@ const SWATCH_PX = 10
 const SWATCH_GAP = 6
 const ENTRY_GAP = 16
 
-// What the plot takes from stylesheets, which an SVG drawn on its own no longer sees.
+// The styles copied into the SVG, which no longer sees the page's stylesheets once it is drawn on its own.
 const PAINT = [
     "fill",
     "fill-opacity",
@@ -124,7 +124,7 @@ async function rasterize(surface: SVGSVGElement): Promise<Plot> {
     return { image, width, height }
 }
 
-// Entries run left to right and wrap at the plot's width, centred as the legend under the chart is.
+// Entries flow left to right, wrap at the plot's width and are centred, like the legend under the chart.
 function legendRows(context: CanvasRenderingContext2D, legend: LegendEntry[], width: number): LegendRow[] {
     const rows: LegendRow[] = []
     for (const entry of legend) {

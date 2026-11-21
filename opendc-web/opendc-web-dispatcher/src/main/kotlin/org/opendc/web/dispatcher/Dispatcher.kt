@@ -143,7 +143,7 @@ data class LaunchRequest(
     val grant: Grant,
 )
 
-/** What a platform said to being handed an execution. */
+/** The platform's answer to a launch. */
 sealed interface Launch {
     data object Accepted : Launch
 
@@ -232,7 +232,7 @@ enum class ExitReason {
     /** The platform refused it for good. */
     REJECTED,
 
-    /** Gone, with no verdict. */
+    /** Ended for a reason that says nothing about the work, such as an eviction or a vanished job. */
     UNKNOWN,
 
     ;
@@ -251,21 +251,21 @@ const val NO_EXIT_CODE = -1
 /** Every launcher JVM runs with this, so running out of heap ends it with [JVM_OUT_OF_MEMORY]. */
 const val EXIT_ON_OUT_OF_MEMORY = "-XX:+ExitOnOutOfMemoryError"
 
-/** What a JVM run with [EXIT_ON_OUT_OF_MEMORY] exits with when its heap runs out. */
+/** Exit code of a JVM run with [EXIT_ON_OUT_OF_MEMORY] whose heap runs out. */
 const val JVM_OUT_OF_MEMORY = 3
 
-/** What a process ended by SIGKILL exits with, as the kernel's out-of-memory killer does. */
+/** Exit code of a process ended by SIGKILL, the signal the kernel's out-of-memory killer sends. */
 const val EXIT_KILLED = 137
 
-/** What a process ended by SIGTERM exits with. */
+/** Exit code of a process ended by SIGTERM. */
 const val EXIT_TERMINATED = 143
 
-/** What every platform names an execution's job, after its id. */
+/** Every platform names an execution's job with this prefix followed by the execution's id. */
 const val JOB_NAME_PREFIX = "opendc-"
 
 fun jobName(executionId: UUID): String = "$JOB_NAME_PREFIX$executionId"
 
-/** Why a launcher that exited by itself with [code] ended. */
+/** The reason a launcher that exited by itself with [code] ended. */
 fun launcherExitReason(code: Int): ExitReason =
     when (code) {
         EXIT_OK, EXIT_UNITS_FAILED -> ExitReason.OK
@@ -275,7 +275,7 @@ fun launcherExitReason(code: Int): ExitReason =
         else -> ExitReason.UNKNOWN
     }
 
-/** What a launcher that exited with [code] is reported as having done. */
+/** How an outcome describes a launcher that exited with [code]. */
 fun launcherExitMessage(code: Int): String =
     when (code) {
         EXIT_OK -> ""
@@ -293,6 +293,7 @@ fun logTail(text: String): String {
     if (bytes.size <= LOG_TAIL_BYTES) {
         return text
     }
+
     val cut = bytes.copyOfRange(bytes.size - LOG_TAIL_BYTES, bytes.size).decodeToString()
     return cut.substringAfter('\n', cut)
 }

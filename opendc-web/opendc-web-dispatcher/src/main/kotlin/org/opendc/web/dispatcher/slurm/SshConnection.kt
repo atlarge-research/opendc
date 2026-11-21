@@ -112,7 +112,10 @@ class SshConnection(private val target: SshTarget) : AutoCloseable {
 
     private var link: Link = Link.Closed
 
-    /** Runs [command] remotely and waits for it to exit. A broken session is replaced on the next call. */
+    /**
+     * Runs [command] remotely and waits up to [COMMAND_TIMEOUT] for it to exit; one still running then
+     * reads as [NO_EXIT_CODE]. A broken session is replaced on the next call.
+     */
     @Synchronized
     fun exec(command: List<String>): CommandResult {
         val session = session()
@@ -160,6 +163,7 @@ class SshConnection(private val target: SshTarget) : AutoCloseable {
             is Link.Open -> if (current.session.isOpen) return current.session
             Link.Closed -> {}
         }
+
         val jump =
             when (val via = target.jump) {
                 JumpHost.Direct -> null
@@ -176,6 +180,7 @@ class SshConnection(private val target: SshTarget) : AutoCloseable {
             opened.close()
             throw e
         }
+
         link = Link.Open(opened)
         return opened
     }

@@ -22,7 +22,7 @@
 
 import com.github.gradle.node.pnpm.task.PnpmTask
 
-description = "Modern web interface for OpenDC (Next.js, TypeScript, Mantine)"
+description = "Web interface for OpenDC (Next.js, TypeScript, Mantine)"
 
 plugins {
     base
@@ -60,7 +60,7 @@ val test =
         description = "Run the Vitest suite"
         args.set(listOf("run", "test"))
         sharedInputs()
-        inputs.files("vitest.config.ts")
+        inputs.files("vitest.config.ts", "vitest.setup.ts")
         outputs.upToDateWhen { true }
     }
 
@@ -70,7 +70,8 @@ val lint =
         description = "Lint and format-check with Biome"
         args.set(listOf("run", "lint"))
         sharedInputs()
-        inputs.files("biome.json")
+        // Biome also checks the configuration files beside src/.
+        inputs.files("biome.json", "next.config.ts", "postcss.config.mjs", "vitest.config.ts", "vitest.setup.ts")
         outputs.upToDateWhen { true }
     }
 

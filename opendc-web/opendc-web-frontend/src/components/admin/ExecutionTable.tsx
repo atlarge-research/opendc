@@ -1,6 +1,6 @@
 "use client"
 
-import { formatDuration, formatMemory, formatUpdatedAt } from "@/components/format"
+import { countOf, formatDuration, formatMemory, formatUpdatedAt } from "@/components/format"
 import { phaseBadge, phaseSince, scenarioRanges } from "@/lib/admin/phase"
 import type { AdminExecution } from "@/lib/api/admin"
 import { Badge, Paper, Stack, Table, Text } from "@mantine/core"
@@ -43,6 +43,7 @@ export function ExecutionTable({
 
 function ExecutionRow({ execution, onOpen }: Readonly<{ execution: AdminExecution; onOpen: (id: string) => void }>) {
     const badge = phaseBadge(execution.phase)
+
     return (
         <Table.Tr style={{ cursor: "pointer" }} onClick={() => onOpen(execution.id)}>
             <Table.Td>
@@ -65,12 +66,12 @@ function ExecutionRow({ execution, onOpen }: Readonly<{ execution: AdminExecutio
             <Table.Td visibleFrom="sm">
                 <Text size="sm">{scenarioRanges(execution.scenarios)}</Text>
                 <Text size="xs" c="dimmed">
-                    {execution.unitCount} units
+                    {countOf(execution.unitCount, "unit")}
                 </Text>
             </Table.Td>
             <Table.Td visibleFrom="md">
                 <Text size="sm">
-                    {execution.cores} cores, {formatMemory(execution.memoryRequestMb)}
+                    {countOf(execution.cores, "core")}, {formatMemory(execution.memoryRequestMb)}
                 </Text>
                 <Text size="xs" c="dimmed">
                     est. {formatDuration(execution.estimatedMakespanSeconds)} of{" "}

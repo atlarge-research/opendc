@@ -107,6 +107,7 @@ class AdminResource(
         val now = Instant.now()
         val page = Execution.find(EXECUTIONS_IN, wanted).within(Window.of(offset, limit))
         val units = ExecutionUnit.findByExecutions(page.map { it.id }).groupBy { it.execution.id }
+
         // Counted on its own: a count of the fetching query would fetch associations it never selects.
         return Page(page.map { it.toAdmin(now, units[it.id].orEmpty()) }, Execution.count("state IN ?1", wanted))
     }

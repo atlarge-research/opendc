@@ -126,6 +126,7 @@ fun archiveResponse(
                 }
             }
         }
+
     return zipAttachment(body, name)
 }
 
@@ -138,6 +139,7 @@ fun traceContentResponse(
     if (tables.isEmpty()) {
         throw notFound("Trace content")
     }
+
     val fileName = trace.slug.substringAfterLast('/')
     val publicId = trace.publicId
     val body =
@@ -151,6 +153,7 @@ fun traceContentResponse(
                 }
             }
         }
+
     return zipAttachment(body, fileName)
 }
 

@@ -74,8 +74,8 @@ data class LocalDispatcherConfig(
  * Runs bags as subprocesses of this server.
  *
  * The process handle is the terminal observer: an exit code the launcher chose is taken at face
- * value, and anything else is read as the machine having ended the process. Nothing outlives this
- * server's lifetime, so reconciling after a restart has nothing to adopt.
+ * value, and anything else is read as the machine having ended the process. A launcher is never
+ * adopted across a restart: reconciling ends any that are left over.
  */
 class LocalDispatcher(private val config: LocalDispatcherConfig) : Dispatcher {
     private val running = ConcurrentHashMap<UUID, Running>()
@@ -120,6 +120,7 @@ class LocalDispatcher(private val config: LocalDispatcherConfig) : Dispatcher {
         if (running.containsKey(request.executionId)) {
             return Launch.Accepted
         }
+
         val directory = directoryOf(request.executionId)
         val process =
             try {
@@ -134,12 +135,14 @@ class LocalDispatcher(private val config: LocalDispatcherConfig) : Dispatcher {
                 directory.toFile().deleteRecursively()
                 return Launch.Rejected("Could not start a launcher: ${e.message}")
             }
+
         val execution = Running(process, request.grant, Instant.now(), AtomicReference(Intent.RUN))
         running[request.executionId] = execution
         // A cancel that arrived while the process was being started finds it here.
         if (pendingCancels.remove(request.executionId)) {
             cancel(request.executionId)
         }
+
         watch(request.executionId, execution, request.grant.timeLimitSeconds)
         return Launch.Accepted
     }
@@ -164,12 +167,16 @@ class LocalDispatcher(private val config: LocalDispatcherConfig) : Dispatcher {
         for (executionId in executionIds.filterNot { running.containsKey(it) }) {
             orphan(executionId)?.destroyForcibly()
         }
+
+        // Only directories named for an execution, so a misconfigured work dir loses nothing else.
         if (config.workDir.exists()) {
             config.workDir
                 .listDirectoryEntries()
+                .filter { entry -> EXECUTION_DIRECTORY.matches(entry.fileName.toString()) }
                 .filter { entry -> running.keys.none { it.toString() == entry.fileName.toString() } }
                 .forEach { it.toFile().deleteRecursively() }
         }
+
         return executionIds.associateWith { executionId ->
             running[executionId]?.let { PlatformVerdict.Running(it.startedAt) } ?: PlatformVerdict.Unknown
         }
@@ -202,11 +209,13 @@ class LocalDispatcher(private val config: LocalDispatcherConfig) : Dispatcher {
             .start {
                 val process = execution.process
                 listener.get().invoke(PlatformEvent.Started(executionId, execution.startedAt))
+
                 if (!process.waitFor(timeLimitSeconds.toLong(), TimeUnit.SECONDS)) {
                     execution.intent.compareAndSet(Intent.RUN, Intent.TIMEOUT)
                     process.destroyForcibly()
                     process.waitFor()
                 }
+
                 val directory = directoryOf(executionId)
                 val outcome = outcome(process.exitValue(), execution, Instant.now(), directory)
                 try {
@@ -230,6 +239,8 @@ class LocalDispatcher(private val config: LocalDispatcherConfig) : Dispatcher {
             when (execution.intent.get()) {
                 Intent.CANCEL -> ExitReason.CANCELLED to "cancelled"
                 Intent.TIMEOUT -> ExitReason.TIMEOUT to "ran past its time limit"
+                // SIGKILL is what the Linux out-of-memory killer sends. Windows has no signals: a
+                // process killed there exits with 1, which reads as unexplained.
                 Intent.RUN ->
                     if (code == EXIT_KILLED) {
                         ExitReason.OOM to "killed, most likely for memory"
@@ -237,6 +248,7 @@ class LocalDispatcher(private val config: LocalDispatcherConfig) : Dispatcher {
                         launcherExitReason(code) to launcherExitMessage(code)
                     }
             }
+
         return ExitOutcome(
             reason = reason,
             exitCode = code,
@@ -283,5 +295,8 @@ class LocalDispatcher(private val config: LocalDispatcherConfig) : Dispatcher {
 
         /** Identifies a launcher process as belonging to one execution of this server. */
         private const val EXECUTION_PROPERTY = "opendc.execution"
+
+        /** The name of an execution's directory: its id. */
+        private val EXECUTION_DIRECTORY = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
     }
 }

@@ -36,22 +36,30 @@ export function formatPower(watts: number): string {
     return formatQuantity("power", watts)
 }
 
+/** Whole seconds, then minutes, then hours; a value that rounds up to the next unit is shown in it. */
 export function formatDuration(seconds: number): string {
-    if (seconds < 60) return `${Math.round(seconds)}s`
-    if (seconds < 3600) return `${Math.round(seconds / 60)}m`
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.round((seconds % 3600) / 60)
+    const rounded = Math.round(seconds)
+    if (rounded < 60) return `${rounded}s`
+
+    const totalMinutes = Math.round(rounded / 60)
+    if (totalMinutes < 60) return `${totalMinutes}m`
+
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
     return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`
 }
 
 export function formatSimulationBudget(seconds: number): string {
-    if (seconds < 60) return countOf(Math.round(seconds), "simulation second")
-    if (seconds < 3600) return countOf(Math.round(seconds / 60), "simulation minute")
-    return countOf(Math.round(seconds / 3600), "simulation hour")
+    const rounded = Math.round(seconds)
+    const minutes = Math.round(rounded / 60)
+    if (rounded < 60) return countOf(rounded, "simulation second")
+    if (minutes < 60) return countOf(minutes, "simulation minute")
+    return countOf(Math.round(rounded / 3600), "simulation hour")
 }
 
-function countOf(count: number, unit: string): string {
-    return `${integers.format(count)} ${unit}${count === 1 ? "" : "s"}`
+/** A count with its noun, pluralised: "1 core", "2 cores". */
+export function countOf(count: number, noun: string): string {
+    return `${integers.format(count)} ${noun}${count === 1 ? "" : "s"}`
 }
 
 export function formatPercent(fraction: number): string {

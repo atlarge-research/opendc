@@ -93,6 +93,7 @@ function ExperimentRowActions({ projectId, experiment }: { projectId: Id; experi
     const clone = useCloneExperiment(experiment.id)
     const remove = useDeleteExperiment(projectId)
     const canEdit = usePermission(projectId, "edit")
+    if (!canEdit) return null
 
     const confirmDelete = () =>
         modals.openConfirmModal({
@@ -102,8 +103,6 @@ function ExperimentRowActions({ projectId, experiment }: { projectId: Id; experi
             confirmProps: { color: "red" },
             onConfirm: () => remove.mutate(experiment.id, { onError: notifyProblem }),
         })
-
-    if (!canEdit) return null
 
     return (
         <Group justify="flex-end">

@@ -25,14 +25,15 @@ const PROGRESS_WIDTH = 150
 const BAR_WIDTH = 90
 const BAR_WIDTH_BESIDE_RETRY = 62
 
-// Narrower than this an axis column's entries read as fragments, so the table scrolls instead.
+// Axis columns never shrink below this width, so the table scrolls instead.
 const AXIS_MIN_WIDTH = 150
 
-// Pinned cells need their own background, and Mantine's sticky header sits at zIndex 3 between them.
+// Pinned cells set their own background. Body cells sit under Mantine's sticky header (z-index 3) and
+// pinned header cells over it.
 const PINNED = { bg: "var(--mantine-color-body)", style: { zIndex: 2 } } as const
 const PINNED_HEADER = { style: { zIndex: 5 } } as const
 
-// Phones drop the progress column and the state column takes its edge.
+// On phones the progress column is hidden and the state column pins to the right edge.
 const INDEX_COLUMN = { w: INDEX_WIDTH, pos: "sticky", left: 0 } as const
 const STATE_COLUMN = { w: STATE_WIDTH, pos: "sticky", right: { base: 0, sm: PROGRESS_WIDTH } } as const
 const PROGRESS_COLUMN = { w: PROGRESS_WIDTH, pos: "sticky", right: 0, visibleFrom: "sm" } as const
@@ -50,13 +51,6 @@ export function ScenarioTable({
 }) {
     const axes = experimentAxes(spec)
     const total = scenarioCount(spec)
-    const varying = [...AXIS_ORDER].reverse().filter((key) => axes[key].length > 1)
-    const entryLabels = new Map<AxisKey, string[]>(varying.map((key) => [key, axisEntryLabels(axes, key)]))
-    const statusAt = new Map(statuses.map((status) => [status.scenarioIndex, status]))
-    const started = statuses.length > 0
-
-    const minWidth = INDEX_WIDTH + varying.length * AXIS_MIN_WIDTH + (started ? STATE_WIDTH + PROGRESS_WIDTH : 0)
-
     if (total === 0) {
         return (
             <Paper withBorder radius="md" p="md">
@@ -66,6 +60,12 @@ export function ScenarioTable({
             </Paper>
         )
     }
+
+    const varying = [...AXIS_ORDER].reverse().filter((key) => axes[key].length > 1)
+    const entryLabels = new Map<AxisKey, string[]>(varying.map((key) => [key, axisEntryLabels(axes, key)]))
+    const statusAt = new Map(statuses.map((status) => [status.scenarioIndex, status]))
+    const started = statuses.length > 0
+    const minWidth = INDEX_WIDTH + varying.length * AXIS_MIN_WIDTH + (started ? STATE_WIDTH + PROGRESS_WIDTH : 0)
 
     return (
         <Paper withBorder radius="md" p={0}>

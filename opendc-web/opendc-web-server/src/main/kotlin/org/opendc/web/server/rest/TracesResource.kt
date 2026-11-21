@@ -223,11 +223,13 @@ class TracesResource(
         val kind = traceKind(request.kind)
         val owner = identity.currentUser()
         val slug = "${owner.handle}/${traceName(request.name)}"
+
         // Before anything is created: a target for a large file opens an upload in storage that a
         // refused request would leave open.
         val sizes = declaredSizes(kind, request.files)
+
         disposal.claim(slug, owner)
-        val trace = Trace.unfinished(slug, kind, owner, request.description.cleaned(), Instant.now())
+        val trace = Trace.unfinished(slug, kind, owner, request.description.validDescription(), Instant.now())
 
         val uploads = kind.tables.map { table -> slotFor(trace, table, sizes.getValue(table)) }
         return Response.status(201).entity(RegisteredTrace(trace.toWire(TraceAccessWire.OWNED), uploads)).build()
@@ -235,7 +237,8 @@ class TracesResource(
 
     /**
      * Takes one table's bytes, for a store a browser cannot write to directly. Any content type, since
-     * a browser names none for a .parquet file.
+     * a browser names none for a .parquet file. A finished trace is refused: experiments name it, and
+     * its row counts were read from these bytes.
      */
     @PUT
     @Path("{id}/tables/{table}")
@@ -249,6 +252,10 @@ class TracesResource(
         if (table !in trace.kind.tables) {
             throw notFound("Table $table")
         }
+        if (trace.isComplete()) {
+            throw conflict("A finished trace cannot be uploaded again")
+        }
+
         body.use { store.put(traceKey(trace.publicId, table), it) }
         return Response.status(204).build()
     }
@@ -283,6 +290,7 @@ class TracesResource(
         edit: TraceEdit,
     ): TraceWire {
         val trace = owned(id)
+
         edit.name?.let { requested ->
             val slug = "${trace.owner?.handle}/${traceName(requested)}"
             if (slug != trace.slug) {
@@ -295,8 +303,9 @@ class TracesResource(
                 trace.slug = slug
             }
         }
-        edit.description?.let { trace.description = it.cleaned() }
+        edit.description?.let { trace.description = it.validDescription() }
         trace.updatedAt = Instant.now()
+
         return trace.toWire(TraceAccessWire.OWNED)
     }
 
@@ -348,10 +357,11 @@ class TracesResource(
         request: ShareRequest,
     ): Response {
         val trace = owned(id)
-        val grantee = UserAccount.findActiveByHandle(request.handle.trim()) ?: throw notFound("Account ${request.handle}")
+        val grantee = UserAccount.findActiveByHandle(request.handle.trim().lowercase()) ?: throw notFound("Account ${request.handle}")
         if (grantee.id == trace.owner?.id) {
             throw conflict("This trace is already yours")
         }
+
         if (TraceGrant.findGrant(trace.id, grantee.id) == null) {
             val grant = TraceGrant()
             grant.trace = trace
@@ -359,6 +369,7 @@ class TracesResource(
             grant.grantedAt = Instant.now()
             grant.persist()
         }
+
         return Response.status(201).entity(TraceShare(grantee.handle, grantee.displayName)).build()
     }
 
@@ -485,7 +496,19 @@ fun traceName(raw: String): String {
     return name
 }
 
-fun String?.cleaned(): String? = this?.trim()?.takeIf { it.isNotEmpty() }
+private const val DESCRIPTION_LENGTH_CAP = 1024
+
+/** A trace description, trimmed, with blank read as none, or a 400 when it does not fit its column. */
+fun String?.validDescription(): String? {
+    val description = this?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+    if (description.length > DESCRIPTION_LENGTH_CAP) {
+        throw invalidDocument(
+            "Trace description is too long",
+            listOf(DocumentIssue("description", "must be at most $DESCRIPTION_LENGTH_CAP characters")),
+        )
+    }
+    return description
+}
 
 fun TraceKind.toWire(): TraceKindWire =
     when (this) {

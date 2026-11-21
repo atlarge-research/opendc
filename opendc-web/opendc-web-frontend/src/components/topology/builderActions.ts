@@ -40,6 +40,7 @@ export function builderActions(editor: TopologyEditor): BuilderActions {
         createAt: (cell) => {
             const dataCenter = dataCenters[floor]
             if (!dataCenter) return
+
             const cluster = newCluster(nextName("Cluster", dataCenter.clusters.map(clusterName)))
             editor.apply((current) => addCluster(current, floor, cluster, cell))
             editor.select(selectCluster({ dataCenter: floor, cluster: dataCenter.clusters.length }))
@@ -47,12 +48,14 @@ export function builderActions(editor: TopologyEditor): BuilderActions {
         duplicateSelected: () => {
             const [first] = selectedClusters(view.selection, floor)
             if (first === undefined) return
+
             editor.apply((current) => duplicateCluster(current, { dataCenter: floor, cluster: first }))
             editor.select(selectCluster({ dataCenter: floor, cluster: first + 1 }))
         },
         deleteSelected: () => {
             const chosen = selectedClusters(view.selection, floor)
             if (chosen.length === 0) return
+
             editor.apply((current) => removeClusters(current, floor, chosen))
             editor.show(afterClusterRemoval(view, floor, chosen))
         },
@@ -67,6 +70,7 @@ export function builderActions(editor: TopologyEditor): BuilderActions {
         },
         removeDataCenter: (dataCenter) => {
             if (dataCenters.length <= 1) return
+
             editor.apply((current) => removeDataCenter(current, dataCenter))
             editor.show(afterDataCenterRemoval(view, dataCenter))
         },
@@ -74,6 +78,7 @@ export function builderActions(editor: TopologyEditor): BuilderActions {
             const source = dataCenters[from]
             const target = dataCenters[to]
             if (!source || !target || from === to) return
+
             const moved = [...new Set(clusters)].filter((index) => source.clusters[index] !== undefined).length
             editor.apply((current) => moveClusters(current, from, clusters, to))
             editor.select(appended(to, target.clusters.length, moved))

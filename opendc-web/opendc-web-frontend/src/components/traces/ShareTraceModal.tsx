@@ -4,7 +4,7 @@ import { LineGhost } from "@/components/util/Ghost"
 import { QueryState } from "@/components/util/QueryState"
 import { notifyProblem } from "@/components/util/feedback"
 import { useRevokeShare, useShareTrace, useShares } from "@/lib/api/traces"
-import type { Trace } from "@/lib/api/types"
+import type { Trace, TraceShare } from "@/lib/api/types"
 import { ActionIcon, Button, Group, Stack, Text, TextInput } from "@mantine/core"
 import { modals } from "@mantine/modals"
 import { IconX } from "@tabler/icons-react"
@@ -22,7 +22,7 @@ export function openShareTrace(trace: Trace): void {
 
 function ShareTraceForm({ trace }: { trace: Trace }) {
     const [handle, setHandle] = useState("")
-    const shares = useShares(trace.id, true)
+    const shares = useShares(trace.id)
     const share = useShareTrace(trace.id)
     const revoke = useRevokeShare(trace.id)
     const trimmed = handle.trim()
@@ -55,32 +55,40 @@ function ShareTraceForm({ trace }: { trace: Trace }) {
                 </Button>
             </Group>
             <QueryState query={shares} ghost={<LineGhost />}>
-                {(loaded) =>
-                    loaded.length === 0 ? (
-                        <Text size="sm" c="dimmed">
-                            Nobody else has this yet.
-                        </Text>
-                    ) : (
-                        <Stack gap={4}>
-                            {loaded.map((entry) => (
-                                <Group key={entry.handle} justify="space-between" wrap="nowrap">
-                                    <Text size="sm">
-                                        {entry.displayName} ({entry.handle})
-                                    </Text>
-                                    <ActionIcon
-                                        variant="subtle"
-                                        color="red"
-                                        aria-label={`Stop sharing with ${entry.handle}`}
-                                        onClick={() => revoke.mutate(entry.handle, { onError: notifyProblem })}
-                                    >
-                                        <IconX size={16} />
-                                    </ActionIcon>
-                                </Group>
-                            ))}
-                        </Stack>
-                    )
-                }
+                {(loaded) => (
+                    <ShareList shares={loaded} onRevoke={(who) => revoke.mutate(who, { onError: notifyProblem })} />
+                )}
             </QueryState>
+        </Stack>
+    )
+}
+
+function ShareList({ shares, onRevoke }: { shares: TraceShare[]; onRevoke: (handle: string) => void }) {
+    if (shares.length === 0) {
+        return (
+            <Text size="sm" c="dimmed">
+                Nobody else has this yet.
+            </Text>
+        )
+    }
+
+    return (
+        <Stack gap={4}>
+            {shares.map((entry) => (
+                <Group key={entry.handle} justify="space-between" wrap="nowrap">
+                    <Text size="sm">
+                        {entry.displayName} ({entry.handle})
+                    </Text>
+                    <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        aria-label={`Stop sharing with ${entry.handle}`}
+                        onClick={() => onRevoke(entry.handle)}
+                    >
+                        <IconX size={16} />
+                    </ActionIcon>
+                </Group>
+            ))}
         </Stack>
     )
 }

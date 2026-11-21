@@ -54,6 +54,7 @@ export function TopologyBuilder({ template }: { template: TopologyTemplate }) {
     const compact = useMediaQuery(COMPACT_QUERY, false, { getInitialValueInEffect: true })
     const [treeOpened, tree] = useDisclosure(false)
     const [inspectorOpened, inspectorDrawer] = useDisclosure(false)
+
     const { plan, view, issues } = editor
     const { selection, floor: shown } = view
     const actions = builderActions(editor)

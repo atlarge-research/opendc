@@ -23,6 +23,7 @@ export function SimulationBudget({ budgets }: Readonly<{ budgets: BudgetWindow[]
 
 function BudgetBar({ budget }: Readonly<{ budget: BudgetWindow }>) {
     const percent = budgetPercent(budget)
+
     return (
         <Stack gap={6}>
             <Group justify="space-between" gap="xs" wrap="nowrap">

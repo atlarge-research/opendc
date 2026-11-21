@@ -85,19 +85,22 @@ const BASE_UNIT: { [K in QuantityKind]: Unit<K> } = {
 export type QuantityValue = { status: "ok"; base: number } | { status: "unspecified" } | { status: "invalid" }
 
 /**
- * Reads a stored measurement into its base unit, accepting every spelling the backend does: values
- * also come from the SDK's formatter ("10.000000 KWatts") and from imported documents.
+ * Reads a stored measurement into its base unit. Besides the "<number> <unit>" text the server writes,
+ * it reads bare numbers and the other spellings the backend accepts in imported documents.
  */
 export function parseQuantity(kind: QuantityKind, wire: Quantity): QuantityValue {
     if (typeof wire === "number") {
         return Number.isFinite(wire) ? classify(wire) : { status: "invalid" }
     }
+
     if (kind === "time") {
         const iso = isoDuration(wire)
         if (iso !== undefined) return classify(iso)
     }
+
     const parts = NUMBER_AND_SUFFIX.exec(wire)
     if (!parts) return { status: "invalid" }
+
     const amount = Number(parts[1])
     const suffix = parts[2] ?? ""
     if (!Number.isFinite(amount)) return { status: "invalid" }
@@ -105,6 +108,7 @@ export function parseQuantity(kind: QuantityKind, wire: Quantity): QuantityValue
 
     const factor = factorOf(kind, suffix)
     if (factor === undefined) return { status: "invalid" }
+
     return classify(amount * factor)
 }
 
@@ -115,15 +119,17 @@ function classify(base: number): QuantityValue {
 
 const NUMBER_AND_SUFFIX = /^\s*([\d.e-]+)\s*(.*?)\s*$/
 
-// TimeDelta serializes through Duration.toString(), so a "5 min" saved from here returns as "PT5M".
+// The backend also reads ISO-8601 durations, such as "PT5M".
 const ISO_DURATION = /^P(?:([\d.]+)D)?(?:T(?:([\d.]+)H)?(?:([\d.]+)M)?(?:([\d.]+)S)?)?$/
 
 function isoDuration(wire: string): number | undefined {
     const parts = ISO_DURATION.exec(wire.trim())
     if (parts === null) return undefined
+
     const [, days, hours, minutes, seconds] = parts
     // "P" and "PT" carry no amount at all, which is a malformed duration rather than a zero one.
     if (days === undefined && hours === undefined && minutes === undefined && seconds === undefined) return undefined
+
     return (
         Number(days ?? 0) * DAY_MS +
         Number(hours ?? 0) * HOUR_MS +
@@ -133,7 +139,7 @@ function isoDuration(wire: string): number | undefined {
 }
 
 /**
- * Every duration spelling the backend's parser matches, in milliseconds. Written out rather than
+ * The duration spellings read for milliseconds, seconds, minutes and hours. Written out rather than
  * built from prefixes because "m" is minutes but "ms" is milliseconds.
  */
 const TIME_UNITS = new Map<string, number>([
@@ -224,7 +230,7 @@ const ENERGY_PREFIXES: ReadonlyArray<readonly [string, number]> = [
 const JOULE = /^(?:j|joules?)$/i
 const WATT_HOUR = /^(?:w|watts?)\s*(?:-|p|per|\/)?\s*(?:h|hours?)$/i
 
-/** Base units per one of [suffix], or undefined when the backend would reject it too. */
+/** Base units per one of [suffix], or undefined when [suffix] is not a unit of [kind]. */
 function factorOf(kind: QuantityKind, suffix: string): number | undefined {
     switch (kind) {
         case "frequency":
@@ -304,6 +310,7 @@ function naturalUnit<K extends QuantityKind>(kind: K, base: number): Unit<K> {
     const ladder = ladderOf(kind)
     const step = ladder.find(([, scale]) => Math.abs(base) >= scale)
     if (step !== undefined) return step[0]
+
     // Smaller than every step, zero included: show it on the smallest unit.
     const smallest = ladder[ladder.length - 1]
     return smallest === undefined ? BASE_UNIT[kind] : smallest[0]

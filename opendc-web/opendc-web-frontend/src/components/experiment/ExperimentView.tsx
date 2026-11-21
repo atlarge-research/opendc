@@ -35,7 +35,10 @@ export function ExperimentView() {
         )
     }
 
-    return <LoadedExperiment experimentId={experimentId.value} tab={tabOf(params.get("tab"))} />
+    // Keyed by experiment so that state, such as a draft's edits, never carries over to another experiment.
+    return (
+        <LoadedExperiment key={experimentId.value} experimentId={experimentId.value} tab={tabOf(params.get("tab"))} />
+    )
 }
 
 function tabOf(raw: string | null): TabName {

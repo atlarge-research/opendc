@@ -44,7 +44,7 @@ export function useChangeRole(projectId: Id) {
     })
 }
 
-/** Removes someone from a project, or the caller themselves, which is leaving it. */
+/** Removes a member; removing the caller is leaving the project. */
 export function useRemoveMember(projectId: Id) {
     const queryClient = useQueryClient()
     return useMutation({

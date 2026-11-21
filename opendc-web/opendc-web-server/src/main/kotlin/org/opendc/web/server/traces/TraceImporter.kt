@@ -67,7 +67,7 @@ interface TraceImportConfig {
     fun concurrency(): Int
 }
 
-/** An import is to start, once the row that tracks it is committed. */
+/** Starts an import, once the transaction that wrote the row tracking it commits. */
 data class ImportRequested(
     val importId: UUID,
     val traceId: UUID,
@@ -112,6 +112,7 @@ class TraceImporter(
     private fun run(event: ImportRequested) {
         val started = QuarkusTransaction.requiringNew().call { TraceImport.findByPublicId(event.importId)?.createdAt } ?: return
         val fetch = RemoteFetch(config.allowPrivateHosts(), config.maxBytes(), started.plus(config.deadline()))
+
         val settled =
             try {
                 for ((table, uri) in event.sources) {
@@ -125,6 +126,7 @@ class TraceImporter(
                 LOG.info("Import {} failed: {}", event.importId, e.message)
                 settle(event.importId) { it.fail(Instant.now(), reasonOf(e)) }
             }
+
         if (!settled) {
             // Failed by the deadline or discarded while this was fetching: what was written is nobody's.
             event.sources.keys.forEach { store.delete(traceKey(event.traceId, it)) }

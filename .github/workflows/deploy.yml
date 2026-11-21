@@ -33,6 +33,6 @@ jobs:
           echo "OPENDC_WEBSITE_VERSION=$OPENDC_WEBSITE_VERSION"
           EOF
       - name: Pull Images
-        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && source .env && docker-compose -f docker-compose.yml -f docker-compose.prod.yml pull'
+        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && source .env && docker compose -f docker-compose.yml -f docker-compose.prod.yml pull'
       - name: Deploy Images
-        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && source .env && docker-compose -f docker-compose.yml -f docker-compose.prod.yml down && docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d'
+        run: ssh -i ../opendc.key opendc@opendc.org 'cd /opt/opendc && source .env && docker compose -f docker-compose.yml -f docker-compose.prod.yml down --remove-orphans && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d'

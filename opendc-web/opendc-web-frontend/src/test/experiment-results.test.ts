@@ -2,10 +2,13 @@ import {
     type ShownRun,
     defaultRuns,
     formatInterval,
+    formatReduced,
     formatScaled,
     formatTick,
+    resultsCsv,
     tickAxisWidth,
     timeAxis,
+    timeRows,
     toggleRun,
 } from "@/components/experiment/results/resultsView"
 import {
@@ -188,10 +191,31 @@ describe("the metric catalog", () => {
         expect(new Set(RESULT_METRICS.map((metric) => metric.id)).size).toBe(RESULT_METRICS.length)
     })
 
-    it("reduces energy and carbon by summing intervals, not by averaging them", () => {
-        const summed = RESULT_METRICS.filter((metric) => metric.reduce === "sum").map((metric) => metric.id)
-        expect(summed).toContain("powerSource.energy_usage")
-        expect(summed).toContain("powerSource.carbon_emission")
+    // The simulator reports energy and carbon as running totals, so summing samples would count each
+    // interval again for every later sample.
+    it("totals energy and carbon by their last sample, not by summing samples", () => {
+        const last = RESULT_METRICS.filter((metric) => metric.reduce === "last").map((metric) => metric.id)
+
+        expect(last).toContain("powerSource.energy_usage")
+        expect(last).toContain("powerSource.carbon_emission")
+    })
+})
+
+// The launcher divides grams emitted by joules used, a number 3.6 million times smaller than grams per
+// kilowatt-hour, which a chart rounds to a flat zero.
+describe("carbon intensity", () => {
+    const intensity = "powerSource.carbon_intensity"
+    const GRAMS_PER_JOULE = 300 / 3_600_000
+    const reported = scenario({ series: [{ metric: intensity, points: points(GRAMS_PER_JOULE), spread: 0 }] })
+
+    it("is plotted in grams per kilowatt-hour", () => {
+        const [row] = timeRows([reported], intensity, ["run"])
+
+        expect(row?.run).toBeCloseTo(300)
+    })
+
+    it("is totalled in grams per kilowatt-hour", () => {
+        expect(formatReduced(GRAMS_PER_JOULE, intensity)).toBe("300 g/kWh")
     })
 })
 
@@ -219,10 +243,11 @@ describe("reduceSeries", () => {
     it("applies the reduction the metric declares", () => {
         const reported = scenario({
             series: [
-                { metric: "powerSource.energy_usage" as const, points: points(10, 10, 10), spread: 0 },
+                { metric: "powerSource.energy_usage" as const, points: points(10, 20, 30), spread: 0 },
                 { metric: "host.cpu_utilization" as const, points: points(0.2, 0.8), spread: 0 },
             ],
         })
+
         expect(reduceMetric(reported, "powerSource.energy_usage")).toEqual({ status: "ok", value: 30 })
         expect(reduceMetric(reported, "host.cpu_utilization")).toEqual({ status: "ok", value: 0.5 })
     })
@@ -233,9 +258,41 @@ describe("reduceSeries", () => {
     })
 })
 
+describe("the CSV export", () => {
+    const results = {
+        experimentId: "4d2e0c34-2b0f-4a0f-9d21-8b0d4a1c9f77",
+        exportIntervalMs: EXPORT_INTERVAL_MS,
+        bucketMs: EXPORT_INTERVAL_MS,
+        complete: true,
+        scenarios: [
+            scenario({
+                scenarioIndex: 3,
+                series: [
+                    { metric: "host.power_draw", points: points(1, 2), spread: 0 },
+                    { metric: "powerSource.power_draw", points: points(10), spread: 0 },
+                ],
+            }),
+        ],
+    }
+
+    it("names every metric by its table and column, so the two power draws stay apart", () => {
+        const [header] = resultsCsv(results).split("\n")
+
+        expect(header).toBe("scenario,simulated_ms,host.power_draw,powerSource.power_draw")
+    })
+
+    it("leaves a cell empty where a metric has no sample at that instant", () => {
+        const [, first, second] = resultsCsv(results).split("\n")
+
+        expect(first).toBe("3,0,1,10")
+        expect(second).toBe(`3,${EXPORT_INTERVAL_MS},2,`)
+    })
+})
+
 describe("alignOnTimestamp", () => {
     it("keeps samples from a shorter run instead of truncating every run to it", () => {
         const rows = alignOnTimestamp([points(1, 2, 3), points(4)])
+
         expect(rows).toHaveLength(3)
         expect(rows[0]?.values).toEqual({ 0: 1, 1: 4 })
         expect(rows[2]?.values).toEqual({ 0: 3 })
@@ -243,6 +300,7 @@ describe("alignOnTimestamp", () => {
 
     it("orders rows by simulated time even when the series arrive out of order", () => {
         const rows = alignOnTimestamp([[{ t: 600, value: 1 }], [{ t: 0, value: 2 }]])
+
         expect(rows.map((row) => row.t)).toEqual([0, 600])
     })
 
@@ -261,12 +319,13 @@ describe("live results", () => {
         scenarios,
     })
 
-    it("does not poll a draft that has no scenarios to report on", () => {
-        expect(isLiveResults(experiment([], false))).toBe(false)
+    it("keeps polling before any scenario has reported, so the first samples appear without a refresh", () => {
+        expect(isLiveResults(experiment([], false))).toBe(true)
     })
 
-    it("stops polling once every scenario has settled", () => {
+    it("stops polling once every scenario has settled, even when none ever reported", () => {
         expect(isLiveResults(experiment([scenario({ complete: true })], true))).toBe(false)
+        expect(isLiveResults(experiment([], true))).toBe(false)
     })
 
     it("keeps polling while a scenario is still producing samples", () => {

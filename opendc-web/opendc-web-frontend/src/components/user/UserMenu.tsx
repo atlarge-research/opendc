@@ -19,6 +19,7 @@ export function UserMenu() {
     }
 
     const { userName } = auth.session
+
     return (
         <>
             <UserDrawer opened={opened} close={close} session={auth.session} />

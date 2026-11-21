@@ -1,6 +1,6 @@
 # The server: the API, the frontend it serves from the same origin, and the dispatcher that creates
-# one Job per execution. Its pods are deliberately not labelled app.kubernetes.io/managed-by=opendc-web,
-# which is the label the dispatcher selects its own Jobs and pods by.
+# one Job per execution. Its pods must not carry the label app.kubernetes.io/managed-by=opendc-web,
+# which the dispatcher uses to select its own Jobs and pods.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -15,8 +15,7 @@ metadata:
   labels:
     app.kubernetes.io/name: opendc-server
 spec:
-  # One replica: the execution loop coordinates through Postgres, but the download signing key in
-  # secrets.env has to be shared before a second replica can serve links the first one signed.
+  # One replica: two execution loops can still claim the same queued execution.
   replicas: 1
   selector:
     matchLabels:

@@ -69,17 +69,19 @@ class ProjectMembersResource(private val identity: Identity) {
         invite: MemberInvite,
     ): Response {
         val project = locked(id, ProjectPermission.MANAGE)
-        val handle = invite.handle.trim()
+        val handle = invite.handle.trim().lowercase()
         val user = UserAccount.findActiveByHandle(handle) ?: throw notFound("Account $handle")
         if (ProjectMember.findMembership(project.id, user.id) != null) {
             throw conflict("$handle is already in this project")
         }
+
         val member = ProjectMember()
         member.project = project
         member.user = user
         member.role = invite.role.toModel()
         member.persist()
         project.updatedAt = Instant.now()
+
         return Response.status(201).entity(member.toWire()).build()
     }
 
@@ -97,6 +99,7 @@ class ProjectMembersResource(private val identity: Identity) {
         if (member.role == ProjectRole.OWNER && role != ProjectRole.OWNER) {
             keepAnOwner(project)
         }
+
         member.role = role
         return member.toWire()
     }
@@ -112,10 +115,12 @@ class ProjectMembersResource(private val identity: Identity) {
         val caller = identity.currentUser()
         val leaving = caller.handle == handle
         val project = locked(id, if (leaving) ProjectPermission.READ else ProjectPermission.MANAGE)
+
         val member = memberOf(project, handle)
         if (member.role == ProjectRole.OWNER) {
             keepAnOwner(project)
         }
+
         member.delete()
         return Response.noContent().build()
     }

@@ -18,9 +18,8 @@ import {
 } from "@/components/experiment/results/resultsView"
 import { PanelGhost } from "@/components/util/Ghost"
 import { QueryState } from "@/components/util/QueryState"
-import { downloadText, fileSlug } from "@/components/util/download"
+import { downloadText, fileSlug, startDownload } from "@/components/util/download"
 import { notifyProblem } from "@/components/util/feedback"
-import { startDownload } from "@/lib/api/downloads"
 import { resultsArchiveLink, useExperimentResults } from "@/lib/api/experiments"
 import type { Experiment } from "@/lib/api/types"
 import {
@@ -32,6 +31,7 @@ import {
     simulatedSpan,
 } from "@/lib/experiment/results"
 import type { ExperimentSpec } from "@/lib/experiment/spec"
+import type { ExperimentState } from "@/lib/experiment/status"
 import { Alert, Button, Group, Select, Stack, Text, useComputedColorScheme } from "@mantine/core"
 import { IconDownload, IconFileZip, IconFlask } from "@tabler/icons-react"
 import { useState } from "react"
@@ -39,15 +39,14 @@ import { useState } from "react"
 const DEFAULT_METRIC: MetricId = "host.cpu_utilization"
 
 export function ResultsPanel({ experiment }: { experiment: Experiment }) {
-    const results = useExperimentResults(experiment.id)
+    if (experiment.state === "draft") return <NoSamples state={experiment.state} />
 
-    if (experiment.state === "draft") {
-        return (
-            <Alert color="gray" icon={<IconFlask size={18} />} title="Nothing has run yet">
-                Results appear here scenario by scenario once the experiment runs.
-            </Alert>
-        )
-    }
+    return <SubmittedResults experiment={experiment} />
+}
+
+// Only a submitted experiment is queried: the server reports a draft as incomplete, which would poll it forever.
+function SubmittedResults({ experiment }: { experiment: Experiment }) {
+    const results = useExperimentResults(experiment.id)
 
     return (
         <QueryState query={results} ghost={<PanelGhost height={260} />}>
@@ -69,9 +68,7 @@ function LoadedResults({ experiment, results }: { experiment: Experiment; result
         return (
             <Stack gap="md">
                 {downloads && <Group justify="flex-end">{downloads}</Group>}
-                <Alert color="gray" icon={<IconFlask size={18} />} title="Waiting for the first samples">
-                    Every scenario is still queued. Measurements stream in at the export interval once one starts.
-                </Alert>
+                <NoSamples state={experiment.state} />
             </Stack>
         )
     }
@@ -163,6 +160,53 @@ function ResultDownloads({ experiment, results }: { experiment: Experiment; resu
     )
 }
 
+function NoSamples({ state }: { state: ExperimentState }) {
+    const { title, message } = noSamplesCopy(state)
+
+    return (
+        <Alert color="gray" icon={<IconFlask size={18} />} title={title}>
+            {message}
+        </Alert>
+    )
+}
+
+// Tells the reader to wait only while a sample can still arrive.
+function noSamplesCopy(state: ExperimentState): { title: string; message: string } {
+    switch (state) {
+        case "draft":
+            return {
+                title: "Nothing has run yet",
+                message: "Results appear here scenario by scenario once the experiment runs.",
+            }
+        case "queued":
+            return {
+                title: "Waiting for the first samples",
+                message: "Every scenario is still queued. Samples arrive at the export interval once one starts.",
+            }
+        case "running":
+            return {
+                title: "Waiting for the first samples",
+                message: "Measurements stream in at the export interval, so the first ones arrive shortly.",
+            }
+        case "succeeded":
+        case "partial":
+            return {
+                title: "No samples were recorded",
+                message: "The experiment finished without exporting the tables these charts read.",
+            }
+        case "failed":
+            return {
+                title: "No samples were recorded",
+                message: "It failed before reporting any. Open a scenario on the Overview tab for its exit and log.",
+            }
+        case "cancelled":
+            return {
+                title: "No samples were recorded",
+                message: "The experiment was stopped before any scenario reported.",
+            }
+    }
+}
+
 function pickMetric(reported: ResultMetric[], preferred: MetricId): ResultMetric {
     const chosen = reported.find((metric) => metric.id === preferred) ?? reported[0]
     if (!chosen) throw new Error("no metric to show")
@@ -191,6 +235,7 @@ function plottedRuns(
         spec,
         ordered.map((run) => run.scenarioIndex),
     )
+
     return ordered.flatMap((run, position) => {
         const scenario = results.scenarios.find((entry) => entry.scenarioIndex === run.scenarioIndex)
         const label = labels[position]

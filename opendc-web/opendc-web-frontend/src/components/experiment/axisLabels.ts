@@ -88,7 +88,7 @@ export function schedulerLabel(policy: AllocationPolicySpec): string {
 export function failureLabel(model: FailureModelSpec): string {
     if (model.type === "none") return "No failures"
     if (model.type === "prefab") return model.prefabName
-    if (model.type === "traceBased") return referenceLabel(model.source)
+    if (model.type === "trace") return referenceLabel(model.source)
     return "Custom"
 }
 

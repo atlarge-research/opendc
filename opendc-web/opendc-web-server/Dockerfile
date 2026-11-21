@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1
 #
-# The self-hosted server: the distribution `./gradlew :opendc-web:opendc-web-server:installDist`
-# builds, which carries the frontend export it serves and the launcher its local dispatcher starts.
-# Build that first, then run `docker build -f opendc-web/opendc-web-server/Dockerfile .` from the
-# repository root, so the image build needs neither Gradle nor Node.
+# The self-hosted server, with the frontend it serves and the launcher it starts. Build the
+# distribution first, so that the image build needs neither Gradle nor Node:
+#
+#   ./gradlew :opendc-web:opendc-web-server:installDist
+#   docker build -f opendc-web/opendc-web-server/Dockerfile .
 FROM eclipse-temurin:21-jre
 
 RUN useradd --system --uid 10001 --home-dir /var/lib/opendc --create-home opendc \
@@ -15,13 +16,12 @@ COPY opendc-web/opendc-web-server/build/install/opendc-server /opt/opendc
 WORKDIR /opt/opendc
 USER 10001
 
-# The server keeps a quarter of the container's memory, which leaves the local dispatcher's default
-# half of the machine to the launchers it starts beside it.
+# The server takes a quarter of the container's memory; by default the launchers it starts share half.
 ENV OPENDC_SERVER_OPTS="-XX:MaxRAMPercentage=25" \
     OPENDC_STORAGE_DIRECTORY=/var/lib/opendc/data \
     OPENDC_DISPATCHER_LOCAL_WORK_DIR=/var/lib/opendc/executions
 
-# 8080 serves the app; 9000 serves /q/health and /q/metrics, for probes and Prometheus only.
+# 8080 serves the app; 9000 serves /q/health and /q/metrics to probes and Prometheus.
 EXPOSE 8080 9000
 ENTRYPOINT ["/opt/opendc/bin/opendc-server"]
 

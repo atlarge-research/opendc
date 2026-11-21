@@ -27,6 +27,11 @@ export default function HomePage() {
     const projects = useProjects()
     const greeting = useWelcomeMessage()
 
+    const searching = isSearching(query)
+    const emptyMessage = searching
+        ? `No projects match "${query.trim()}".`
+        : "No projects here yet. Create one to get started."
+
     return (
         <AppShell>
             <Container size="lg" py="lg">
@@ -35,17 +40,10 @@ export default function HomePage() {
                         <Title order={1}>{greeting}</Title>
                         <Text c="dimmed">Find all your personal and shared projects.</Text>
                     </Stack>
-                    <ProjectsToolbar filter={filter} onFilterChange={setFilter} searchActive={isSearching(query)} />
+                    <ProjectsToolbar filter={filter} onFilterChange={setFilter} searchActive={searching} />
                     <QueryState query={projects} ghost={<CardGridGhost />}>
                         {(loaded) => (
-                            <ProjectGrid
-                                projects={filterProjects(loaded, filter, query)}
-                                emptyMessage={
-                                    isSearching(query)
-                                        ? `No projects match "${query.trim()}".`
-                                        : "No projects here yet. Create one to get started."
-                                }
-                            />
+                            <ProjectGrid projects={filterProjects(loaded, filter, query)} emptyMessage={emptyMessage} />
                         )}
                     </QueryState>
                 </Stack>

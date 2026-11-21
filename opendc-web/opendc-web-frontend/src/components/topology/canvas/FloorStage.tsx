@@ -15,7 +15,7 @@ import {
 import { useCanvasPalette } from "@/components/topology/canvas/palette"
 import { useHardwareIcons } from "@/components/topology/canvas/useHardwareIcons"
 import type { PowerBudget } from "@/lib/topology/capacity"
-import type { FloorCell, FloorLayout } from "@/lib/topology/layout"
+import { type FloorCell, type FloorLayout, clusterAt } from "@/lib/topology/layout"
 import type { ClusterSpec } from "@/lib/topology/spec"
 import { useElementSize } from "@mantine/hooks"
 import type Konva from "konva"
@@ -88,6 +88,7 @@ export function FloorStage(props: FloorStageProps) {
         const stage = stageRef.current
         const pointer = stage?.getPointerPosition()
         if (!stage || !pointer) return undefined
+
         const transform = stage.getAbsoluteTransform().copy().invert()
         return cellAtPoint(transform.point(pointer))
     }
@@ -104,9 +105,12 @@ export function FloorStage(props: FloorStageProps) {
             (Math.abs(event.evt.clientX - start.x) > DRAG_TOLERANCE ||
                 Math.abs(event.evt.clientY - start.y) > DRAG_TOLERANCE)
         if (moved || event.target !== event.target.getStage()) return
+
         const cell = pointerCell()
-        if (cell && withinFloor(cell, layout)) props.onCreate(cell)
-        else props.onClearSelection()
+        if (cell === undefined || !withinFloor(cell, layout)) return props.onClearSelection()
+
+        // The gap around a tile is still its cell, so only an empty cell takes a new cluster.
+        if (clusterAt(layout, cell).status === "empty") props.onCreate(cell)
     }
 
     const handleWheel = (event: KonvaEventObject<WheelEvent>) => {
@@ -115,8 +119,7 @@ export function FloorStage(props: FloorStageProps) {
     }
 
     const floor = floorPixelSize(layout)
-    const occupied = new Set(layout.cells.map((cell) => `${cell.x},${cell.y}`))
-    const hoverFree = hovered !== undefined && !occupied.has(`${hovered.x},${hovered.y}`)
+    const hoverFree = hovered !== undefined && clusterAt(layout, hovered).status === "empty"
 
     return (
         <div ref={ref} style={{ width: "100%", height: "100%" }}>

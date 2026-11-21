@@ -31,10 +31,10 @@ import org.opendc.web.server.storage.experimentKey
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
-/** The platform is to stop these executions, once the decision to stop them is committed. */
+/** Asks the platform to stop these executions, once the transaction that decided it commits. */
 data class StopRequested(val executionIds: List<UUID>)
 
-/** These experiments' objects are to go, once their rows are gone. */
+/** Deletes these experiments' objects from the store, once the transaction that deleted their rows commits. */
 data class DiscardRequested(val experimentIds: List<UUID>)
 
 /**

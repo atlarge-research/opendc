@@ -31,6 +31,7 @@ import org.opendc.web.launcher.Reduction
  */
 fun meanAcrossSeeds(perSeed: List<List<MetricPoint>>): List<MetricPoint> {
     perSeed.singleOrNull()?.let { return it }
+
     val total = sortedMapOf<Long, DoubleArray>()
     for (points in perSeed) {
         for (point in points) {
@@ -39,6 +40,7 @@ fun meanAcrossSeeds(perSeed: List<List<MetricPoint>>): List<MetricPoint> {
             cell[COUNT]++
         }
     }
+
     return total.map { (t, cell) -> MetricPoint(t, cell[SUM] / cell[COUNT]) }
 }
 
@@ -53,10 +55,8 @@ data class BucketGrid(
 
 /**
  * The grid that folds each of [series] to at most [buckets] points. It starts at the earliest instant
- * any of them measured and is the smallest whole multiple of every one of [exportIntervalsMs], doubled
- * until the longest series fits and no series skips a bucket. Each bucket then holds as many samples of
- * a scenario as the next, whichever interval it exported at, and as many of the points a launcher folds
- * by doubling too.
+ * measured, and its width is the least common multiple of [exportIntervalsMs], doubled until the longest
+ * series fits and no series skips a bucket, so every bucket holds as many of a scenario's samples as the next.
  */
 fun bucketGrid(
     series: List<List<MetricPoint>>,
@@ -69,6 +69,7 @@ fun bucketGrid(
     if (measured.isEmpty()) {
         return BucketGrid(0, width)
     }
+
     val origin = measured.minOf { it.first().t }
     val end = measured.maxOf { it.last().t }
     val widestGap = measured.maxOf { points -> points.zipWithNext { first, next -> next.t - first.t }.fold(0L, ::maxOf) }

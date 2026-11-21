@@ -62,9 +62,11 @@ class ProjectAccessTest {
         editor = TestAccounts.person("editor")
         viewer = TestAccounts.person("viewer")
         stranger = TestAccounts.person("stranger")
+
         project = owner.request().body("""{"name":"Shared"}""").post("/api/v1/projects").then().statusCode(201).extract().path("id")
         invite(editor, "editor").then().statusCode(201)
         invite(viewer, "viewer").then().statusCode(201)
+
         topology =
             owner
                 .request()
@@ -150,6 +152,7 @@ class ProjectAccessTest {
     @Test
     fun `owners demoting each other at once leave exactly one owner`() {
         owner.request().body("""{"role":"owner"}""").patch("/api/v1/projects/$project/members/${editor.handle}").then().statusCode(200)
+
         val pool = Executors.newFixedThreadPool(2)
         val demotions =
             listOf(owner to editor, editor to owner).map { (by, target) ->

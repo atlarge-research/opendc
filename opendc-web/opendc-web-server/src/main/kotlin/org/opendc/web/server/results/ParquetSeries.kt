@@ -45,13 +45,13 @@ import java.util.Collections
 /** The column every output table is stamped with, holding simulated milliseconds since the run began. */
 private const val TIMESTAMP = "timestamp"
 
-/** How many reduced runs are memoised at once; a reduction is small and its file never changes. */
+/** How many reduced runs are memoised at once; each reduction is small. */
 private const val MEMOISED_RUNS = 512
 
-/** Nothing has been read yet. Simulated time starts at zero, so it cannot stand in for this. */
+/** Marks that no instant has been read yet. Zero cannot, since simulated time starts there. */
 private const val NO_INSTANT = Long.MIN_VALUE
 
-/** What a table with one row per instant calls that row. Ids count up from zero, so none is this. */
+/** The entity of a table with one row per instant. Real entity ids count up from zero. */
 private const val THE_ONLY_ROW = -1
 
 /**
@@ -75,6 +75,7 @@ class ParquetSeries(private val store: ObjectStore) {
      */
     fun read(prefix: String): Map<ResultMetric, List<MetricPoint>> {
         memoised[prefix]?.let { return it }
+
         val reduced =
             OutputFileSpec.entries.fold(
                 emptyMap<ResultMetric, List<MetricPoint>>(),
@@ -99,6 +100,7 @@ class ParquetSeries(private val store: ObjectStore) {
         if (metrics.isEmpty() || !store.exists(key)) {
             return emptyMap()
         }
+
         val file = StoredObjectFile(store, key)
         val schema = ParquetFileReader.open(file).use { it.fileMetaData.schema }
         val identity = (table.rows as? RowIdentity.PerEntity)?.takeIf { schema.containsField(it.column) }
@@ -119,6 +121,7 @@ class ParquetSeries(private val store: ObjectStore) {
                 row = rows.read()
             }
         }
+
         return fold.finish()
     }
 
@@ -135,12 +138,14 @@ class ParquetSeries(private val store: ObjectStore) {
         if (identity == null || wanted.isEmpty() || !store.exists("$prefix/${identity.meta.path}")) {
             return emptyMap()
         }
+
         val file = StoredObjectFile(store, "$prefix/${identity.meta.path}")
         val schema = ParquetFileReader.open(file).use { it.fileMetaData.schema }
         val columns = wanted.filter { schema.containsField(it) }
         if (columns.isEmpty() || !schema.containsField(identity.column)) {
             return emptyMap()
         }
+
         val byColumn = columns.associateWith { mutableMapOf<Int, Double>() }
         val projection = MessageType(schema.name, (listOf(identity.column) + columns).map { schema.getType(it) })
         rows(file, projection).use { rows ->
@@ -153,6 +158,7 @@ class ParquetSeries(private val store: ObjectStore) {
                 row = rows.read()
             }
         }
+
         return byColumn
     }
 

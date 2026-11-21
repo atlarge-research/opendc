@@ -30,9 +30,12 @@ import io.quarkus.test.junit.TestProfile
 import io.quarkus.test.oidc.server.OidcWiremockTestResource
 import io.restassured.RestAssured.given
 import io.restassured.specification.RequestSpecification
+import jakarta.inject.Inject
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.opendc.web.server.auth.ImplicitAccount
+import org.opendc.web.server.model.AccessToken
 import org.opendc.web.server.model.UserAccount
 import java.time.Instant
 import java.util.UUID
@@ -51,6 +54,9 @@ private const val OWN_DATABASE = "jdbc:h2:mem:opendc-auth0;DB_CLOSE_DELAY=-1;INI
 @TestProfile(Auth0ModeTest.Auth0Mode::class)
 @QuarkusTestResource(OidcWiremockTestResource::class, restrictToAnnotatedClass = true)
 class Auth0ModeTest {
+    @Inject
+    lateinit var implicit: ImplicitAccount
+
     class Auth0Mode : QuarkusTestProfile {
         override fun getConfigOverrides(): Map<String, String> =
             mapOf(
@@ -116,6 +122,7 @@ class Auth0ModeTest {
     fun `parallel first requests make one account`() {
         val subject = "auth0|${UUID.randomUUID()}"
         val pool = Executors.newFixedThreadPool(4)
+
         val statuses = (1..4).map { pool.submit<Int> { signedIn(subject).get("/api/v1/me").statusCode } }.map { it.get() }
         pool.shutdown()
         pool.awaitTermination(10, TimeUnit.SECONDS)
@@ -128,6 +135,26 @@ class Auth0ModeTest {
     fun `a subject named as an administrator is one from its first sign-in`() {
         signedIn(ADMIN_SUBJECT).get("/api/v1/me").then().statusCode(200).body("isAdmin", equalTo(true))
         signedIn("auth0|${UUID.randomUUID()}").get("/api/v1/me").then().statusCode(200).body("isAdmin", equalTo(false))
+    }
+
+    // Quarkus reads roles from a token's groups, which the identity provider decides, not this server.
+    @Test
+    fun `a token in a group called admin is no administrator`() {
+        val claimsAdmin = token("auth0|${UUID.randomUUID()}", groups = setOf("admin"))
+
+        given().auth().oauth2(claimsAdmin).get("/api/v1/admin/capacity").then().statusCode(403)
+    }
+
+    // The implicit account of anonymous mode is an administrator, so its tokens must not survive a
+    // switch to signing people in on the same database.
+    @Test
+    fun `a token minted while nobody signed in stops working once people sign in`() {
+        val secret =
+            QuarkusTransaction.requiringNew().call {
+                AccessToken.mint(checkNotNull(UserAccount.findById(implicit.id)), "left over", Instant.now()).secret
+            }
+
+        given().auth().oauth2(secret).get("/api/v1/me").then().statusCode(401)
     }
 
     @Test
@@ -144,5 +171,6 @@ class Auth0ModeTest {
     private fun token(
         subject: String,
         audience: String = AUDIENCE,
-    ): String = OidcWiremockTestResource.generateJwtToken("someone", setOf("user"), subject, "Bearer", setOf(audience))
+        groups: Set<String> = setOf("user"),
+    ): String = OidcWiremockTestResource.generateJwtToken("someone", groups, subject, "Bearer", setOf(audience))
 }

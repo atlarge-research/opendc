@@ -33,10 +33,7 @@ export type SupplyShare =
     | { status: "unlimited"; drawW: number }
     | { status: "limited"; drawW: number; fraction: number }
 
-/**
- * The simulator's default supply is `Long.MAX_VALUE` W, which is written as
- * "9223372036854776.000000 KWatts" and reads back as exactly this.
- */
+/** The simulator's default supply is `Long.MAX_VALUE` W, which as a double is exactly 2^63. */
 export const UNLIMITED_SUPPLY_W = 2 ** 63
 
 export const WATTS_PER_KW = 1000
@@ -70,6 +67,7 @@ export function hostCapacity(host: HostSpec): Capacity {
     const gpus = host.gpu ? gpuCount(host.gpu) : 0
     const cpuPower = host.cpuPowerModel ? watts(peakPower(host.cpuPowerModel)) : 0
     const gpuPower = host.gpu && host.gpuPowerModel ? watts(peakPower(host.gpuPowerModel)) : 0
+
     return {
         dataCenters: 0,
         clusters: 0,

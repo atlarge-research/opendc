@@ -99,7 +99,7 @@ class WrapperScriptTest {
     fun `passes the launcher's exit code through and records when it started and ended`() {
         val process = run(java(exit = 23), job = "42")
 
-        assertEquals(23, process.waitFor().also { process.waitFor(10, TimeUnit.SECONDS) })
+        assertEquals(23, process.waitFor())
         val work = dir.resolve("work")
         assertTrue(work.resolve("started").exists())
         val exit = fields(work.resolve("exit"))

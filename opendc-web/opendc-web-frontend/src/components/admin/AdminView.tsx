@@ -6,7 +6,7 @@ import { ExecutionsPanel } from "@/components/admin/ExecutionsPanel"
 import { useAuth } from "@/lib/auth/auth"
 import { Container, Stack, Tabs, Text, Title } from "@mantine/core"
 
-/** The operator's view. The gate around it has already settled that someone is signed in. */
+/** The operator's view, shown to admins only. The server enforces the same rule on every /admin request. */
 export function AdminView() {
     const auth = useAuth()
     if (auth.status !== "signedIn") return undefined

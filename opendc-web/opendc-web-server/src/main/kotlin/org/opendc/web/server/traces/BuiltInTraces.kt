@@ -73,6 +73,7 @@ class BuiltInTraces(private val store: ObjectStore) {
         }
 
         val size = bundled.use { store.put(key, it) }
+
         val part =
             existing ?: TracePart().also {
                 it.trace = trace
@@ -83,6 +84,7 @@ class BuiltInTraces(private val store: ObjectStore) {
         if (existing == null) {
             part.persist()
         }
+
         LOG.info("Stored built-in trace {} table {} ({} bytes, {} rows)", trace.slug, table, size, part.rowCount)
     }
 

@@ -11,6 +11,9 @@ import { Button, Group, Pagination, Paper, Stack, Title, Tooltip } from "@mantin
 import { IconPlus } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 
+/** The built-in trace a new draft runs against, so it is valid as it stands. */
+const STARTER_TRACE = "bitbrains-small"
+
 export function ExperimentSection({
     projectId,
     experiments,
@@ -32,9 +35,10 @@ export function ExperimentSection({
 
     const promptCreate = () => {
         if (!first) return
+
         const spec: ExperimentSpec = {
             topologies: [first.topology],
-            workloads: [{ type: "trace", source: { type: "named", name: "bitbrains-small" } }],
+            workloads: [{ type: "trace", source: { type: "named", name: STARTER_TRACE } }],
         }
         openNamePrompt({
             title: "Create an experiment",

@@ -354,9 +354,11 @@ class KubernetesDispatcherTest {
         assertEquals(ExitReason.REJECTED, finished().reason)
     }
 
+    // The dispatcher that launched does not observe: one that did would take the ended Job's end and
+    // delete the Job, racing the restarted server's look at the cluster.
     @Test
     fun `answers a restarted server from the cluster as it stands`() {
-        val launcher = dispatcher(listener = {})
+        val launcher = dispatcher(observing = false)
         val waiting = request()
         val running = request()
         val ended = request()

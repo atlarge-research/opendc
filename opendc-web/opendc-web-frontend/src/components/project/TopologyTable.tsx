@@ -49,6 +49,7 @@ export function TopologyTable({ projectId, templates }: { projectId: Id; templat
 
 function TopologyRow({ projectId, template }: { projectId: Id; template: TopologyTemplate }) {
     const capacity = topologyCapacity(template.topology)
+
     return (
         <Table.Tr>
             <Table.Td>
@@ -79,6 +80,12 @@ function TopologyRowActions({ projectId, template }: { projectId: Id; template: 
     const remove = useDeleteTopology(projectId)
     const canEdit = usePermission(projectId, "edit")
 
+    const duplicateTemplate = () =>
+        duplicate.mutate(
+            { name: `${template.name} (copy)`, topology: template.topology, layout: template.layout },
+            { onError: notifyProblem },
+        )
+
     const confirmDelete = () =>
         modals.openConfirmModal({
             title: `Delete ${template.name}?`,
@@ -102,15 +109,7 @@ function TopologyRowActions({ projectId, template }: { projectId: Id; template: 
                 </Menu.Target>
                 <Menu.Dropdown>
                     {canEdit && (
-                        <Menu.Item
-                            leftSection={<IconCopy size={16} />}
-                            onClick={() =>
-                                duplicate.mutate(
-                                    { name: `${template.name} (copy)`, topology: template.topology },
-                                    { onError: notifyProblem },
-                                )
-                            }
-                        >
+                        <Menu.Item leftSection={<IconCopy size={16} />} onClick={duplicateTemplate}>
                             Duplicate
                         </Menu.Item>
                     )}

@@ -16,8 +16,7 @@ export interface ApiProblem {
 
 export type ProjectRole = "owner" | "editor" | "viewer"
 
-// Identifiers are opaque strings issued by the server (uuids). Nothing on the client parses,
-// orders or does arithmetic on them; they are only ever passed back.
+// Opaque identifiers (uuids) issued by the server; the client only passes them back.
 export type Id = string
 
 export interface Project {
@@ -49,12 +48,6 @@ export interface CostEstimate {
     scenarioCount: number
     estimatedSimulationSeconds: number
     estimatedBudgetSeconds: number
-}
-
-export interface ExperimentPreview {
-    scenarioCount: number
-    estimate: CostEstimate
-    issues: DocumentIssue[]
 }
 
 export interface Experiment {
@@ -150,13 +143,10 @@ export interface TopologyTemplate {
 
 export type TraceKind = "workload" | "carbon" | "failure"
 
-/**
- * How you came by a trace, which is what decides whether you may change it: the deployment's own
- * are nobody's to edit, and one shared with you belongs to somebody else.
- */
+/** How the caller came by a trace, which decides what they may change: built-ins are nobody's to edit. */
 export type TraceAccess = "builtin" | "owned" | "shared"
 
-/** One table of a trace. Rows here means rows of the parquet file, of which there are many. */
+/** One table of a trace. `rowCount` is the number of rows in its parquet file. */
 export interface TraceTable {
     name: string
     sizeBytes: number
@@ -201,10 +191,7 @@ export interface UploadPart {
     length: number
 }
 
-/**
- * Where one table's bytes go. Direct means object storage takes them without touching the API, and
- * more than one part means they may go at once.
- */
+/** Where one table's bytes go: `direct` means object storage takes them without the API. */
 export interface UploadSlot {
     table: string
     parts: UploadPart[]
@@ -241,8 +228,7 @@ export type PlanTier = "free" | "education" | "enterprise"
 
 export type BudgetPeriod = "session" | "week"
 
-// Unlimited is a deliberate grant, held by accounts raised by hand, rather than the absence of a
-// limit.
+// Unlimited is a deliberate grant, not the absence of a limit.
 export type SimulationCap = { type: "limited"; seconds: number } | { type: "unlimited" }
 
 export interface BudgetWindow {
@@ -260,15 +246,14 @@ export interface Invoice {
     paid: boolean
 }
 
-// Renewal and payment method only exist once a billing provider is wired up; until then the server
-// sends neither rather than sending placeholders.
+// Renewal and payment method exist only once a billing provider is wired up; until then they are omitted.
 export interface Billing {
     renewsAt?: string
     paymentMethod?: string
     invoices: Invoice[]
 }
 
-/** The name other people see, or that there is none yet: a first sign-in has to choose one. */
+/** The name other people see, or none yet: a first sign-in must choose one. */
 export type Handle = { type: "provisional" } | { type: "chosen"; name: string }
 
 /** How this deployment signs people in, which the app learns at runtime rather than at build. */

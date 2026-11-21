@@ -157,6 +157,7 @@ internal class RemoteExecutions(
     fun launcher(): String {
         val target = layout.launcher(distribution.hash)
         if (launcherPresent) return target
+
         ssh.sftp { sftp ->
             if (!sftp.exists(target)) {
                 val staging = "${layout.root}/launchers/.${distribution.hash}.${UUID.randomUUID()}"
@@ -171,6 +172,7 @@ internal class RemoteExecutions(
                 }
             }
         }
+
         launcherPresent = true
         return target
     }
@@ -183,6 +185,7 @@ internal class RemoteExecutions(
         require(CACHE_KEY.matches(input.key) && input.key.split('/').none { it == "." || it == ".." }) {
             "'${input.key}' cannot name a cached input"
         }
+
         val target = layout.cached(input.key)
         synchronized(staging.computeIfAbsent(input.key) { Any() }) { cache(input, target) }
     }
@@ -196,6 +199,7 @@ internal class RemoteExecutions(
                 sftp.setStat(target, SftpClient.Attributes().modifyTime(Instant.now().epochSecond, TimeUnit.SECONDS))
                 return@sftp
             }
+
             val directory = target.substringBeforeLast('/')
             sftp.mkdirs(directory)
             val part = "$directory/.${target.substringAfterLast('/')}.${UUID.randomUUID()}.part"
@@ -278,6 +282,7 @@ internal class RemoteExecutions(
         val directory = layout.execution(executionId)
         ssh.sftp { sftp ->
             val original = SdkJson.json.decodeFromString(LaunchManifest.serializer(), sftp.readText("$directory/$ORIGINAL_MANIFEST"))
+
             for ((index, unit) in original.units.withIndex()) {
                 val marker = "$directory/units/$index.json"
                 if (!sftp.exists(marker)) continue
@@ -308,6 +313,7 @@ internal class RemoteExecutions(
         val cutoff = Instant.now().minus(retention)
         ssh.sftp { sftp ->
             sftp.removeOlderThan("${layout.root}/cache", cutoff)
+
             val launchers = "${layout.root}/launchers"
             if (sftp.exists(launchers)) {
                 for (entry in sftp.readDir(launchers)) {

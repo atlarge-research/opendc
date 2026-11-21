@@ -59,6 +59,7 @@ class ProjectsResource(
     ): List<ProjectSummary> {
         val user = identity.currentUser()
         val memberships = ProjectMember.findByUser(user.id)
+
         val filtered =
             when (filter ?: "all") {
                 "", "all" -> memberships
@@ -75,6 +76,7 @@ class ProjectsResource(
             } else {
                 filtered.filter { it.project.name.contains(q, ignoreCase = true) }
             }
+
         return matched
             .sortedByDescending { it.project.updatedAt }
             .map { it.toSummary() }
@@ -85,17 +87,20 @@ class ProjectsResource(
     fun create(request: ProjectRequest): RestResponse<ProjectSummary> {
         val name = validName(request.name, "Project")
         val user = identity.currentUser()
+
         val now = Instant.now()
         val project = Project()
         project.name = name
         project.createdAt = now
         project.updatedAt = now
         project.persist()
+
         val member = ProjectMember()
         member.project = project
         member.user = user
         member.role = ProjectRole.OWNER
         member.persist()
+
         return RestResponse.status(RestResponse.Status.CREATED, member.toSummary())
     }
 
@@ -127,8 +132,10 @@ class ProjectsResource(
         @RestPath id: String,
     ) {
         val member = projectFor(identity.currentUser(), id, ProjectPermission.MANAGE)
-        // What the experiments hold on a platform or in the store; the rows go through the cascades.
+
+        // Charges for and stops the experiments' running work and clears their output; their rows go with the cascades.
         pipeline.discardAll(member.project)
+
         // The loaded membership still points at the project, and Hibernate will not flush a live row
         // referencing one being deleted.
         member.delete()

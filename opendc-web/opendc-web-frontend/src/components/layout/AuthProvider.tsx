@@ -26,6 +26,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
             </MessagePage>
         )
     }
+
     const auth = config.data.auth
     switch (auth.type) {
         case "anonymous":

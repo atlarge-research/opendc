@@ -33,7 +33,6 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.LockModeType
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.intellij.lang.annotations.Language
 import org.opendc.web.dispatcher.ExitOutcome
@@ -160,8 +159,8 @@ class RunUnit : PanacheEntityBase {
 
         fun findByExperiment(experimentId: Long): List<RunUnit> = list(BY_EXPERIMENT, experimentId)
 
-        /** Everything submitted that no execution is carrying yet. */
-        fun findQueued(): List<RunUnit> = list(QUEUED_WORK)
+        /** The oldest submitted unit that no execution is carrying yet. */
+        fun oldestQueued(): RunUnit? = find(QUEUED_WORK).firstResult()
 
         /** The queued units of one experiment, locked, so a claim and a cancel cannot both take them. */
         fun lockQueued(experimentId: Long): List<RunUnit> =
@@ -195,16 +194,12 @@ class Execution : PanacheEntityBase {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     lateinit var experiment: Experiment
 
-    /** What this attempt carried, and how each unit of it ended. */
-    @OneToMany(mappedBy = "execution")
-    var carried: MutableList<ExecutionUnit> = mutableListOf()
-
     @Enumerated(EnumType.STRING)
     var state: ExecutionState = ExecutionState.QUEUED
 
     var attempt: Int = 1
 
-    /** The hash of the launcher's telemetry credential, absent until [state] says the work was handed over. */
+    /** Hash of the launcher's telemetry token, set when the work is handed over. */
     var tokenHash: String? = null
 
     lateinit var dispatcher: String
@@ -269,10 +264,10 @@ class Execution : PanacheEntityBase {
                 PeakMemoryKind.MEASURED -> PeakMemory.Measured(checkNotNull(peakResidentMb), checkNotNull(peakLiveHeapMb))
             }
 
-    /** What the process exited with, or [NO_EXIT_CODE] while it has not or where nothing was recorded. */
+    /** The exit code, or [NO_EXIT_CODE] before the process ends or where none was recorded. */
     val reportedExitCode: Int get() = exitCode ?: NO_EXIT_CODE
 
-    /** Hands the work to the platform: out of the queue, with a fresh credential, returned once. */
+    /** Takes the work out of the queue and returns a fresh telemetry token, readable only this once. */
     fun submit(at: Instant): String {
         state = ExecutionState.SUBMITTED
         submittedAt = at
@@ -291,6 +286,7 @@ class Execution : PanacheEntityBase {
         if (state != ExecutionState.QUEUED && state != ExecutionState.SUBMITTED) {
             return
         }
+
         if (state == ExecutionState.QUEUED) {
             submittedAt = at
         }
@@ -316,6 +312,7 @@ class Execution : PanacheEntityBase {
         this.exitCode = outcome.exitCode
         this.exitMessage = outcome.message
         this.settledAt = at
+
         when (val span = outcome.span) {
             is PlatformSpan.Ran -> {
                 platformSpan = SpanKind.RAN
@@ -324,6 +321,7 @@ class Execution : PanacheEntityBase {
             }
             PlatformSpan.NotStarted -> {}
         }
+
         when (val peak = outcome.peakMemory) {
             is PeakMemory.Measured -> {
                 peakMemoryKind = PeakMemoryKind.MEASURED
@@ -334,10 +332,7 @@ class Execution : PanacheEntityBase {
         }
     }
 
-    /**
-     * Mints the launcher's telemetry credential and returns it the one time it can be read. A fresh
-     * one every time the work goes out, so a token cannot outlive the attempt it was minted for.
-     */
+    /** Mints a telemetry token and keeps only its hash. Every hand-over gets a new one, so a token dies with its attempt. */
     private fun grantToken(): String {
         val token = newSecret(EXECUTION_TOKEN_PREFIX, TOKEN_BYTES)
         tokenHash = sha256Hex(token)
@@ -407,7 +402,7 @@ class Execution : PanacheEntityBase {
 
         fun findByExperiment(experimentId: Long): List<Execution> = list(BY_EXPERIMENT, experimentId)
 
-        /** The cores running executions of one experiment hold, read without loading them, as below. */
+        /** The cores one experiment's running executions hold, read without loading them; see [onPlatformOfExperiment]. */
         fun heldByExperiment(experimentId: Long): List<HeldCores> =
             getEntityManager().createQuery(HELD_OF_EXPERIMENT, HeldCores::class.java).setParameter(1, experimentId).resultList
 
@@ -417,8 +412,8 @@ class Execution : PanacheEntityBase {
         /** Executions this server believes a platform is holding. */
         fun findOnPlatform(): List<Execution> = list(ON_PLATFORM)
 
-        /** Executions written down and waiting for room, oldest first. */
-        fun findWaiting(): List<Execution> = list(WAITING)
+        /** The oldest execution written down and waiting for room. */
+        fun oldestWaiting(): Execution? = find(WAITING).firstResult()
 
         /**
          * The executions of one experiment a platform holds, by id only. Read without loading them,

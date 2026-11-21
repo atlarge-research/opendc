@@ -47,20 +47,24 @@ class RemoteFetchTest {
     @BeforeEach
     fun serve() {
         server = HttpServer.create(InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0)
+
         server.createContext("/small") { exchange ->
             exchange.sendResponseHeaders(200, SMALL.size.toLong())
             exchange.responseBody.use { it.write(SMALL) }
         }
+
         // No content length: the cap has to catch it while reading, not from the headers.
         server.createContext("/streamed") { exchange ->
             exchange.sendResponseHeaders(200, 0)
             exchange.responseBody.use { body -> repeat(LARGE_CHUNKS) { body.write(ByteArray(CHUNK)) } }
         }
+
         server.createContext("/moved") { exchange ->
             exchange.responseHeaders.add("Location", "/small")
             exchange.sendResponseHeaders(302, -1)
             exchange.close()
         }
+
         // Answers, sends a little, then goes quiet without closing.
         server.createContext("/stalled") { exchange ->
             exchange.sendResponseHeaders(200, SMALL.size * 2L)
@@ -69,11 +73,13 @@ class RemoteFetchTest {
             Thread.sleep(STALL_MILLIS)
             exchange.close()
         }
+
         server.createContext("/loop") { exchange ->
             exchange.responseHeaders.add("Location", "/loop")
             exchange.sendResponseHeaders(302, -1)
             exchange.close()
         }
+
         server.start()
     }
 
@@ -94,6 +100,7 @@ class RemoteFetchTest {
             val check = checkSource(uri, listOf(InetAddress.getByName(address)), allowPrivateHosts = false)
             assertInstanceOf(SourceCheck.Refused::class.java, check, address)
         }
+
         assertEquals(SourceCheck.Allowed, checkSource(uri, listOf(InetAddress.getByName("10.1.2.3")), allowPrivateHosts = true))
     }
 
@@ -135,6 +142,7 @@ class RemoteFetchTest {
     @Test
     fun `gives up on redirects that never end and on missing files`() {
         assertThrows<FetchFailure> { fetch().read(url("/loop")) { it.readBytes() } }
+
         val missing = assertThrows<FetchFailure> { fetch().read(url("/absent")) { it.readBytes() } }
         assertTrue(missing.message!!.contains("404"))
     }

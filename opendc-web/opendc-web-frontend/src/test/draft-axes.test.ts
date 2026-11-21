@@ -57,6 +57,7 @@ describe("topology axis", () => {
 
     it("has nothing selected when the project has no topologies at all", () => {
         const bound = bindTopologies([], [])
+
         expect(bound.selected).toEqual([])
         expect(bound.rebuild([])).toEqual([])
     })
@@ -65,6 +66,7 @@ describe("topology axis", () => {
 describe("workload axis", () => {
     it("round-trips a named trace without rewriting it", () => {
         const bound = bindWorkloads([named("azure-2019")], catalog("bitbrains-small", "azure-2019"))
+
         expect(bound.selected).toEqual(["azure-2019"])
         expect(bound.rebuild(bound.selected)).toEqual([named("azure-2019")])
     })
@@ -82,11 +84,19 @@ describe("workload axis", () => {
             source: { type: "named", name: "azure-2019" },
             sampleFraction: 0.25,
         }
-        const bound = bindWorkloads([sampled], catalog("azure-2019"))
+        const bound = bindWorkloads([sampled], catalog("azure-2019", "bitbrains-small"))
 
-        // Naming the trace is enough to identify it, so the entry is rebuilt from the catalog and
-        // the sample fraction is not carried over. Removing and re-adding a trace resets it.
         expect(bound.selected).toEqual(["azure-2019"])
+        expect(bound.rebuild(["azure-2019", "bitbrains-small"])).toEqual([sampled, named("bitbrains-small")])
+    })
+
+    it("keeps an efficient trace as its own choice instead of rewriting it as a plain trace", () => {
+        const efficient: WorkloadSpec = { type: "efficient-trace", source: { type: "named", name: "azure-2019" } }
+        const bound = bindWorkloads([efficient], catalog("bitbrains-small"))
+
+        expect(bound.selected).not.toContain("azure-2019")
+        expect(bound.choices.map((choice) => choice.label)).toContain("azure-2019")
+        expect(bound.rebuild(bound.selected)).toEqual([efficient])
     })
 
     it("offers a description for every catalog entry so the picker can explain itself", () => {
@@ -107,7 +117,7 @@ describe("scheduler axis", () => {
     })
 
     it("keeps a hand written filter policy that has no prefab name", () => {
-        const custom: AllocationPolicySpec = { type: "filter", subsetSize: 4 }
+        const custom: AllocationPolicySpec = { type: "filter", filters: [{ type: "compute" }] }
         const bound = bindSchedulers([custom], catalog("Mem"))
 
         expect(bound.rebuild(bound.selected)).toEqual([custom])
@@ -117,15 +127,17 @@ describe("scheduler axis", () => {
 describe("failure axis", () => {
     it("offers the absence of failures as a choice of its own", () => {
         const bound = bindFailureModels([{ type: "none" }], catalog("G5k06Exp"))
+
         expect(bound.selected).toEqual(["none"])
         expect(bound.rebuild(["none"])).toEqual([{ type: "none" }])
     })
 
     it("keeps a trace based failure model that no catalog entry can express", () => {
-        const traced: FailureModelSpec = { type: "traceBased", source: { type: "uri", uri: "s3://failures" } }
+        const traced: FailureModelSpec = { type: "trace", source: { type: "uri", uri: "s3://failures" } }
         const bound = bindFailureModels([traced], catalog("G5k06Exp"))
 
         expect(bound.rebuild(bound.selected)).toEqual([traced])
+        expect(bound.choices.map((choice) => choice.label)).toContain("Failures from a trace")
     })
 
     it("drops an entry whose choice disappeared rather than inventing one", () => {

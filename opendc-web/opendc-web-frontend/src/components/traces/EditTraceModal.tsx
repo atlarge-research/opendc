@@ -17,6 +17,7 @@ export function openEditTrace(trace: Trace): void {
 
 function EditTraceForm({ trace }: { trace: Trace }) {
     const edit = useEditTrace()
+
     // Only the part after the handle is the owner's to change.
     const [name, setName] = useState(trace.slug.split("/").pop() ?? "")
     const [description, setDescription] = useState(trace.description ?? "")

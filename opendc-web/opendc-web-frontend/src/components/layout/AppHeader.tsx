@@ -1,10 +1,10 @@
 "use client"
 
+import { UserMenu } from "@/components/user/UserMenu"
 import { logoGradient } from "@/theme/theme"
 import { ActionIcon, Anchor, Box, Group, Image, Text } from "@mantine/core"
 import { IconBrandGithub, IconHelp } from "@tabler/icons-react"
 import Link from "next/link"
-import { UserMenu } from "../user/UserMenu"
 
 const githubUrl = "https://github.com/atlarge-research/opendc"
 const helpUrl = "https://opendc.org/"

@@ -53,7 +53,7 @@ private val SIGNALLED = setOf(EXIT_KILLED, EXIT_TERMINATED)
 /** Taint effects that keep a pod off a node unless it tolerates them, which this server's pods never do. */
 private val REPELLING_TAINTS = setOf("NoSchedule", "NoExecute")
 
-/** Where the taints live that Kubernetes itself sets for as long as a node condition lasts, such as a cordon. */
+/** Key prefix of the taints Kubernetes sets while a node condition lasts, such as a cordon. */
 private const val CONDITION_TAINTS = "node.kubernetes.io/"
 
 /** Cores and memory at the scale of one pod: what a pod requests, or the most a node can give one. */
@@ -77,7 +77,7 @@ internal sealed interface JobState {
 
     data class Running(val startedAt: Instant) : JobState
 
-    /** It ended. The log tail is filled in by the dispatcher, which is what can fetch one. */
+    /** It ended. The log tail is left empty for the dispatcher to fill in, since only it can fetch one. */
     data class Ended(val outcome: ExitOutcome) : JobState
 }
 
@@ -130,6 +130,7 @@ internal fun jobState(
     if (gone) {
         return ended(ExitReason.UNKNOWN, "removed from the cluster before it ended", terminated = null)
     }
+
     val running = container?.state?.running
     if (running != null) {
         return JobState.Running(instant(running.startedAt) ?: Instant.now())
@@ -159,6 +160,7 @@ internal fun capacityOf(
     val requests = live.flatMap { pod -> pod.spec?.containers.orEmpty().map { it.resources?.requests.orEmpty() } }
     val allocatedCores = requests.sumOf { amount(it["cpu"]) }
     val allocatedMemory = requests.sumOf { amount(it["memory"]) } / BYTES_PER_MB
+
     if (usable.isEmpty()) {
         return ceiling.copy(allocatedCores = allocatedCores.toInt(), allocatedMemoryMb = allocatedMemory)
     }
@@ -241,6 +243,7 @@ private fun conditionEnded(job: Job): JobState? {
             span(instant(job.status?.startTime), instant(job.status?.completionTime))
         return JobState.Ended(ExitOutcome(ExitReason.OK, 0, "", span, PeakMemory.Unmeasured, ""))
     }
+
     val failed = conditions.firstOrNull { it.type == "Failed" } ?: return null
     return ended(ExitReason.UNKNOWN, "failed with no pod left to read: ${failed.reason.orEmpty()}", terminated = null)
 }

@@ -15,6 +15,13 @@ import { useState } from "react"
 
 const ALL = "all"
 
+const KIND_FILTERS = [
+    { value: ALL, label: "All" },
+    { value: "workload", label: "Workload" },
+    { value: "carbon", label: "Carbon" },
+    { value: "failure", label: "Failure" },
+]
+
 export default function TracesPage() {
     const [kind, setKind] = useState<TraceKind | typeof ALL>(ALL)
     const traces = useTraces(kind === ALL ? undefined : kind)
@@ -33,12 +40,7 @@ export default function TracesPage() {
                         <SegmentedControl
                             value={kind}
                             onChange={(value) => setKind(value as TraceKind | typeof ALL)}
-                            data={[
-                                { value: ALL, label: "All" },
-                                { value: "workload", label: "Workload" },
-                                { value: "carbon", label: "Carbon" },
-                                { value: "failure", label: "Failure" },
-                            ]}
+                            data={KIND_FILTERS}
                         />
                         <Group gap="xs">
                             <Button variant="default" leftSection={<IconLink size={16} />} onClick={openImportTrace}>

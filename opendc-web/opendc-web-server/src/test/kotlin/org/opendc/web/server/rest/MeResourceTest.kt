@@ -102,6 +102,7 @@ class MeResourceTest {
     @Test
     fun `a newcomer chooses a handle before doing anything else`() {
         val newcomer = TestAccounts.newcomer()
+
         newcomer.request().get("/api/v1/me").then().statusCode(200).body("handle.type", equalTo("provisional"))
         newcomer.request().get("/api/v1/projects").then().statusCode(403).body("title", equalTo("Choose a handle first"))
 

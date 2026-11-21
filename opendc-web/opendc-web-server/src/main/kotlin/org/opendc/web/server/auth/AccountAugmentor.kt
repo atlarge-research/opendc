@@ -35,6 +35,9 @@ import java.time.Instant
 /**
  * Turns whoever Quarkus security recognised into an account: an Auth0 subject's, made on first sight,
  * or in anonymous mode the implicit one, with no I/O. Identities from our own tokens pass through.
+ *
+ * A signed-in caller's roles come from the account alone. Quarkus OIDC reads roles from the token's
+ * groups, and an identity provider group that happens to be called admin must grant nothing here.
  */
 @ApplicationScoped
 class AccountAugmentor(
@@ -50,7 +53,12 @@ class AccountAugmentor(
             principal is JsonWebToken ->
                 context.runBlocking {
                     val account = signedIn(principal.subject, config.admins().orElse(emptySet()), Instant.now())
-                    QuarkusSecurityIdentity.builder(identity).actingAs(account).build()
+                    QuarkusSecurityIdentity
+                        .builder()
+                        .addCredentials(identity.credentials)
+                        .addAttributes(identity.attributes)
+                        .actingAs(account)
+                        .build()
                 }
             identity.isAnonymous && config.mode() == AuthMode.ANONYMOUS ->
                 Uni.createFrom().item(

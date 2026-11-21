@@ -68,6 +68,7 @@ class ExperimentsResourceTest {
     @Test
     fun aDraftIsCreatedWithAnEstimateAndNoSubmissionTime() {
         val created = createDraft("First")
+
         created
             .then()
             .statusCode(201)
@@ -77,6 +78,24 @@ class ExperimentsResourceTest {
             .body("submittedAt", equalTo(null))
         assertTrue(created.jsonPath().getString("specHash").isNotBlank())
         Instant.parse(created.jsonPath().getString("createdAt"))
+    }
+
+    // Expanding two billion runs would take the server's memory with it, so the count comes first.
+    @Test
+    fun aSpecThatExpandsToTooManyRunsIsRefusedBeforeItIsExpanded() {
+        val huge = SPEC.replaceFirst("{", """{"runs":2000000000,""")
+
+        ApiTest.requestJson()
+            .body("""{"spec":$huge}""")
+            .post("/api/v1/experiments/preview")
+            .then()
+            .statusCode(400)
+            .body("issues.path", hasItem("runs"))
+        ApiTest.requestJson()
+            .body("""{"projectId":"$projectId","name":"Huge","spec":$huge}""")
+            .post("/api/v1/experiments")
+            .then()
+            .statusCode(400)
     }
 
     @Test
@@ -104,6 +123,7 @@ class ExperimentsResourceTest {
         val id = draftId("Submit once")
 
         val submitted = ApiTest.requestJson().post("/api/v1/experiments/$id/submit")
+
         submitted.then().statusCode(200).body("state", equalTo("queued"))
         Instant.parse(submitted.jsonPath().getString("submittedAt"))
 
@@ -118,6 +138,7 @@ class ExperimentsResourceTest {
         ApiTest.requestJson().post("/api/v1/experiments/$id/submit").then().statusCode(200)
 
         val status = ApiTest.requestJson().get("/api/v1/experiments/$id/status")
+
         status
             .then()
             .statusCode(200)
@@ -136,6 +157,7 @@ class ExperimentsResourceTest {
     @Test
     fun aDraftHasNoScenariosToReportOn() {
         val id = draftId("Unsubmitted")
+
         ApiTest.requestJson().get("/api/v1/experiments/$id/status").then().statusCode(200).body("state", equalTo("draft"))
         ApiTest.requestJson().get("/api/v1/experiments/$id/scenarios/0").then().statusCode(404)
     }
@@ -160,6 +182,7 @@ class ExperimentsResourceTest {
     @Test
     fun cancelAppliesOnlyToAnExperimentThatIsActuallyRunning() {
         val id = draftId("Cancel")
+
         ApiTest.requestJson().post("/api/v1/experiments/$id/cancel").then().statusCode(409)
 
         ApiTest.requestJson().post("/api/v1/experiments/$id/submit").then().statusCode(200)
@@ -174,6 +197,7 @@ class ExperimentsResourceTest {
         val source = ApiTest.requestJson().get("/api/v1/experiments/$id")
 
         val clone = ApiTest.requestJson().post("/api/v1/experiments/$id/clone?name=Copy")
+
         clone.then().statusCode(201).body("name", equalTo("Copy")).body("state", equalTo("draft"))
         assertNotEquals(id, clone.jsonPath().getString("id"))
         assertEquals(source.jsonPath().getString("specHash"), clone.jsonPath().getString("specHash"))
@@ -184,6 +208,7 @@ class ExperimentsResourceTest {
     @Test
     fun cloningWithoutANameDerivesOneFromTheSource() {
         val id = draftId("Derived")
+
         ApiTest.requestJson().post("/api/v1/experiments/$id/clone").then().statusCode(201).body("name", equalTo("Derived (copy)"))
     }
 
@@ -202,12 +227,14 @@ class ExperimentsResourceTest {
     @Test
     fun previewReportsTheScenarioCountWithoutStoringAnything() {
         val before = summaryCount()
+
         ApiTest.requestJson()
             .body("""{"spec":$SPEC}""")
             .post("/api/v1/experiments/preview")
             .then()
             .statusCode(200)
             .body("scenarioCount", greaterThan(0))
+
         assertEquals(before, summaryCount())
     }
 

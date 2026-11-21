@@ -1,7 +1,7 @@
 #!/bin/sh
-# Checks a running OpenDC deployment end to end: the frontend is served from the API's origin, and an
-# experiment over the built-in bitbrains-small trace is submitted, simulated and its results read
-# back. Exits non-zero on the first thing that does not work.
+# Checks a running OpenDC deployment end to end: the API's origin serves the frontend, and an
+# experiment over the built-in bitbrains-small trace runs and its results read back. Exits non-zero
+# at the first failure.
 #
 #   OPENDC_URL=http://localhost:8080 deploy/smoke-test.sh
 #

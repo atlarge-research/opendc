@@ -114,21 +114,24 @@ class DownloadLinks(config: DownloadConfig) {
     ): Download {
         val parts = ticket.split('.')
         if (parts.size != 2) {
-            throw expired()
+            throw invalidLink()
         }
-        val payload = decode(parts[0]) ?: throw expired()
-        val signature = decode(parts[1]) ?: throw expired()
+
+        // The payload is parsed only once the signature over it checks out.
+        val payload = decode(parts[0]) ?: throw invalidLink()
+        val signature = decode(parts[1]) ?: throw invalidLink()
         if (!MessageDigest.isEqual(signature, mac(payload))) {
-            throw expired()
+            throw invalidLink()
         }
+
         val grant =
             try {
                 Json.decodeFromString(DownloadGrant.serializer(), payload.decodeToString())
             } catch (e: SerializationException) {
-                throw expired()
+                throw invalidLink()
             }
         if (now.epochSecond >= grant.expiresAt) {
-            throw expired()
+            throw invalidLink()
         }
         return grant.download
     }
@@ -148,7 +151,7 @@ class DownloadLinks(config: DownloadConfig) {
             null
         }
 
-    private fun expired(): WebApplicationException =
+    private fun invalidLink(): WebApplicationException =
         WebApplicationException(
             Response
                 .status(404)

@@ -28,6 +28,12 @@ export function BulkClusterInspector({
         return spec ? [clusterName(spec)] : []
     })
 
+    const setCopies = (value: string | number) => {
+        if (typeof value === "number" && value >= 1) {
+            apply((current) => updateClusters(current, index, clusters, { count: value }))
+        }
+    }
+
     return (
         <ScrollArea h="100%" p="md">
             <Stack gap="sm">
@@ -41,11 +47,7 @@ export function BulkClusterInspector({
                     size="xs"
                     min={1}
                     placeholder="Set for every selected cluster"
-                    onChange={(value) =>
-                        typeof value === "number" &&
-                        value >= 1 &&
-                        apply((current) => updateClusters(current, index, clusters, { count: value }))
-                    }
+                    onChange={setCopies}
                 />
                 <DataCenterSelect
                     label="Move to data center"

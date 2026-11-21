@@ -149,6 +149,7 @@ private class RunSamples(
                 closeInstant()
                 instant = timestamp
             }
+
             for ((metric, reading) in readings) {
                 reporting.getValue(metric)[entity] = reading
             }
@@ -178,12 +179,14 @@ private class RunSamples(
         if (instant == NO_INSTANT) {
             return
         }
+
         for ((metric, byEntity) in reporting) {
             if (byEntity.isNotEmpty()) {
                 series.getValue(metric).add(instant, metric.fold(byEntity.values))
                 byEntity.clear()
             }
         }
+
         instant = NO_INSTANT
     }
 }
@@ -212,6 +215,7 @@ private class PointBuffer(private val fold: Reduction) {
         if (pending.size < stride) {
             return
         }
+
         points += MetricPoint(pendingAt, fold.of(pending))
         pending.clear()
         if (points.size >= SAMPLE_CAP) {

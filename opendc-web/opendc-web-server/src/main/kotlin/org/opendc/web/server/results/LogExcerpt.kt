@@ -47,6 +47,7 @@ data class LogExcerpt(
             val kept = ArrayDeque<String>()
             var omitted = 0
             var inside = false
+
             for (line in lines) {
                 if (RECORD_START.containsMatchIn(line)) {
                     inside = tag in line
@@ -54,12 +55,14 @@ data class LogExcerpt(
                 if (!inside) {
                     continue
                 }
+
                 kept.addLast(line)
                 if (kept.size > limit) {
                     kept.removeFirst()
                     omitted++
                 }
             }
+
             return LogExcerpt(kept.toList(), omitted)
         }
     }

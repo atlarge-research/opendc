@@ -1,6 +1,6 @@
 "use client"
 
-import { formatDuration, formatMemory, formatPercent } from "@/components/format"
+import { countOf, formatDuration, formatMemory, formatPercent } from "@/components/format"
 import { PanelGhost } from "@/components/util/Ghost"
 import { QueryState } from "@/components/util/QueryState"
 import { type PlatformCapacity, useAdminCapacity } from "@/lib/api/admin"
@@ -18,6 +18,7 @@ export function CapacityPanel() {
 function CapacityView({ capacity }: Readonly<{ capacity: PlatformCapacity }>) {
     const timeCap =
         capacity.slotTimeCap.type === "limited" ? formatDuration(capacity.slotTimeCap.seconds) : "no time limit"
+
     return (
         <Stack gap="md">
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
@@ -35,8 +36,8 @@ function CapacityView({ capacity }: Readonly<{ capacity: PlatformCapacity }>) {
                 />
             </SimpleGrid>
             <Text size="sm" c="dimmed">
-                The {capacity.dispatcher} dispatcher gives one execution at most {capacity.slotCores} cores and{" "}
-                {formatMemory(capacity.slotMemoryMb)}, with {timeCap}.
+                The {capacity.dispatcher} dispatcher gives one execution at most {countOf(capacity.slotCores, "core")}{" "}
+                and {formatMemory(capacity.slotMemoryMb)}, with {timeCap}.
             </Text>
         </Stack>
     )
@@ -49,6 +50,7 @@ function Usage({
     format,
 }: Readonly<{ label: string; used: number; total: number; format: (value: number) => string }>) {
     const fraction = total > 0 ? used / total : 0
+
     return (
         <Paper withBorder radius="md" p="md">
             <Stack gap="xs">

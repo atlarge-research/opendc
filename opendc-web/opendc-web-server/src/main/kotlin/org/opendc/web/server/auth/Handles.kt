@@ -37,7 +37,7 @@ private val HANDLE = Regex("[a-z][a-z0-9-]{${MIN_HANDLE_LENGTH - 2},${MAX_HANDLE
 private val RESERVED_HANDLES =
     setOf("admin", "administrator", "anonymous", "api", "builtin", "help", "local", "me", "opendc", "root", "support", "system")
 
-/** How many hex digits of the subject's hash name a placeholder: enough that two never meet. */
+/** Hex digits of the subject's hash in a placeholder handle, enough that two never collide. */
 private const val PLACEHOLDER_DIGITS = 16
 
 /** [raw] as a handle, trimmed and folded to lower case, or a 400 naming what is wrong with it. */
@@ -60,5 +60,5 @@ fun validHandle(raw: String): String {
     return handle
 }
 
-/** What a first sign-in is called until its person chooses: unique, and plainly not a choice. */
+/** The handle a first sign-in holds until its person chooses one: unique, and plainly not chosen. */
 fun placeholderHandle(subject: String): String = "user-${sha256Hex(subject).take(PLACEHOLDER_DIGITS)}"

@@ -126,9 +126,11 @@ fun planBags(
         val perUnit = policy.offHeapPerUnitMb + policy.heapHeadroom * head.peakMemoryMb
         val fits = floor((slot.memoryMb - policy.jvmBaselineMb) / perUnit).coerceIn(1.0, slot.cores.toDouble())
         val size = min(fits.toInt(), ordered.size - index)
+
         bags.add(ordered.subList(index, index + size).toList().toBag(slot, policy))
         index += size
     }
+
     return bags
 }
 
@@ -151,12 +153,11 @@ fun retryBags(
     }
 
 /**
- * The bags that answer the resource [reason] says ran out under [failed].
+ * [units] re-packed with more of whatever [reason] says ran out under [failed].
  *
- * Memory is answered per unit: each unit is grown to at least its share of the heap that was not
- * enough, so the estimate that packed it does not pack it the same way again, and the units are
- * re-packed around their new size. Time is answered with a longer limit, up to the slot's cap; a bag
- * already at the cap has nothing left to try. A death nobody explained is tried once more as it was.
+ * Memory grows per unit: each unit gets at least its share of the heap that was not enough, so it is
+ * not packed the same way again. Time grows as a longer limit, up to the slot's cap; a bag already at
+ * the cap has nothing left to try. An unexplained ending is tried once more as it was.
  */
 fun escalatedBags(
     units: List<PlannedUnit>,
@@ -233,6 +234,7 @@ fun unfit(
         val memory = requestMb(1, unit.peakMemoryMb, policy)
         val cap = slot.timeCap
         val memoryCap = policy.requestCapMb(slot)
+
         when {
             cap is TimeCap.Limited && seconds > cap.seconds -> Unfit.TooLong(unit, seconds, cap.seconds)
             memory > memoryCap -> Unfit.TooLarge(unit, memory, memoryCap)
@@ -251,9 +253,11 @@ private fun List<PlannedUnit>.toBag(
 ): PlannedBag {
     val head = maxOf { it.peakMemoryMb }
     val makespan = maxOf { it.cpuSeconds }
+
     // Starting a launcher costs the same whatever it then runs, so it is added rather than
     // multiplied: a factor over a short bag's estimate is all startup and no work.
     val limit = ceil(policy.startupSeconds + policy.timeSafetyFactor * makespan).toInt().coerceAtLeast(1)
+
     return PlannedBag(
         units = this,
         grant =

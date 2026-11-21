@@ -11,10 +11,10 @@ import {
     peakPower,
 } from "@/lib/topology/spec"
 
-/** What a fitted model is calibrated to before anybody fits it: the plain curve. */
+/** Calibration factor of a new mse model, before anybody fits it to measurements. */
 const STARTER_CALIBRATION_FACTOR = 1
 
-/** Where draw turns close to linear, from the middle of the range the model's authors give. */
+/** Utilization beyond which a new asymptotic model draws close to linearly; typical values are 0.2 to 0.5. */
 const STARTER_ASYMPTOTIC_UTILIZATION = 0.3
 
 export const STARTER_HOST: HostSpec = {

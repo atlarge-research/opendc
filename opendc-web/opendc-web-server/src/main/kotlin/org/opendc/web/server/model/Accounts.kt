@@ -169,6 +169,7 @@ class AccessToken : PanacheEntityBase {
         if (last is TokenUsage.Used && last.at.isAfter(now.minus(USE_RESOLUTION))) {
             return
         }
+
         useKind = TokenUse.USED
         lastUsedAt = now
     }
@@ -188,6 +189,7 @@ class AccessToken : PanacheEntityBase {
             now: Instant,
         ): MintedSecret {
             val secret = newSecret(PAT_PREFIX, PAT_BYTES)
+
             val token = AccessToken()
             token.user = user
             token.name = name
@@ -195,6 +197,7 @@ class AccessToken : PanacheEntityBase {
             token.tokenPrefix = secret.take(DISPLAYED_PREFIX)
             token.createdAt = now
             token.persist()
+
             return MintedSecret(token, secret)
         }
 
@@ -204,7 +207,7 @@ class AccessToken : PanacheEntityBase {
     }
 }
 
-/** A token as it is minted, the only time its secret exists outside the caller's hands. */
+/** A newly minted token and its secret, which can never be read again after this. */
 data class MintedSecret(
     val token: AccessToken,
     val secret: String,
@@ -228,5 +231,5 @@ fun newSecret(
     bytes: Int,
 ): String = prefix + Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(bytes).also(RANDOM::nextBytes))
 
-/** What is kept of a secret: enough to recognise it, nothing to recover it from. */
+/** The SHA-256 of [text] in hex, which is all that is kept of a secret. */
 fun sha256Hex(text: String): String = MessageDigest.getInstance("SHA-256").digest(text.toByteArray()).joinToString("") { "%02x".format(it) }

@@ -78,20 +78,24 @@ export function afterClusterRemoval(view: BuilderView, dataCenter: number, remov
     const { selection } = view
     if (selection.kind !== "clusters" && selection.kind !== "host") return view
     if (selection.dataCenter !== dataCenter) return view
+
     const gone = new Set(removed)
     if (selection.kind === "host") {
         if (gone.has(selection.cluster)) return { ...view, selection: selectDataCenter(dataCenter) }
         return { ...view, selection: { ...selection, cluster: shift(selection.cluster, removed) } }
     }
+
     const kept = selection.clusters.filter((index) => !gone.has(index)).map((index) => shift(index, removed))
     return { ...view, selection: withClusters(dataCenter, kept) }
 }
 
 export function afterDataCenterRemoval(view: BuilderView, dataCenter: number): BuilderView {
     const floor = view.floor > dataCenter || (view.floor === dataCenter && dataCenter > 0) ? view.floor - 1 : view.floor
+
     const { selection } = view
     if (selection.kind === "topology") return { floor, selection }
     if (selection.dataCenter === dataCenter) return { floor, selection: WHOLE_TOPOLOGY }
+
     const moved = selection.dataCenter > dataCenter ? selection.dataCenter - 1 : selection.dataCenter
     return { floor, selection: { ...selection, dataCenter: moved } }
 }
@@ -99,10 +103,13 @@ export function afterDataCenterRemoval(view: BuilderView, dataCenter: number): B
 /** Drops whatever an undo, redo or import left pointing past the end of the topology. */
 export function clampToTopology(view: BuilderView, topology: TopologySpec): BuilderView {
     const floor = Math.max(0, Math.min(view.floor, topology.datacenters.length - 1))
+
     const { selection } = view
     if (selection.kind === "topology") return { floor, selection }
+
     const dataCenter = topology.datacenters[selection.dataCenter]
     if (!dataCenter) return { floor, selection: WHOLE_TOPOLOGY }
+
     switch (selection.kind) {
         case "dataCenter":
             return { floor, selection }

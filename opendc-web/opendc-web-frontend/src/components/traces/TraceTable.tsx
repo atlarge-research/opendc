@@ -29,8 +29,7 @@ export function TraceTable({ traces }: { traces: Trace[] }) {
                 <Table.Thead>
                     <Table.Tr>
                         <Table.Th>Name</Table.Th>
-                        {/* Narrow screens keep the name and the menu; what these hold moves under
-                            the name, where it reads as a sentence rather than a squeezed column. */}
+                        {/* On narrow screens these columns move under the name. */}
                         <Table.Th w={110} visibleFrom="sm">
                             Kind
                         </Table.Th>
@@ -97,8 +96,7 @@ function TraceName({ trace }: { trace: Trace }) {
     )
 }
 
-// A trace is one or more tables, and their counts are different quantities rather than one to add
-// up: tasks and fragments count different things.
+// The tables count different things (tasks, fragments), so each row count is listed rather than summed.
 function TraceRows({ trace }: { trace: Trace }) {
     const counted = trace.tables.filter((table) => table.rowCount !== undefined)
     if (counted.length === 0) {
@@ -108,6 +106,7 @@ function TraceRows({ trace }: { trace: Trace }) {
             </Text>
         )
     }
+
     return (
         <Group gap="md" wrap="wrap">
             {counted.map((table) => (

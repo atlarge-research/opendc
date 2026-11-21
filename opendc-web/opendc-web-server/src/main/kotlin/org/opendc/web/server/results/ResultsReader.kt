@@ -60,6 +60,7 @@ class ResultsReader(
                 .toSortedMap()
                 .map { (index, runs) -> MeasuredScenario(index, runs, runs.map { measured(experimentId, it, posted) }) }
                 .filter { it.means.isNotEmpty() }
+
         val grid = bucketGrid(scenarios.flatMap { it.means.values }, exportIntervalsMs, buckets)
         return ChartedScenarios(grid.width, scenarios.map { it.charted(grid) })
     }
@@ -84,6 +85,7 @@ class ResultsReader(
                 return landed
             }
         }
+
         return posted[RunKey(experimentId, unit.scenarioIndex, unit.seed)].orEmpty().mapNotNull { series ->
             // A metric from a launcher of another version drops one line rather than the whole chart.
             ResultMetric.byId(series.metric)?.let { it to series.points }

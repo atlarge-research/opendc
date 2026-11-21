@@ -1,7 +1,7 @@
 "use client"
 
 import { formatReduced, magnitudeColor } from "@/components/experiment/results/resultsView"
-import { type MetricId, RESULT_METRICS, type ScenarioResults, reduceMetric, seriesOf } from "@/lib/experiment/results"
+import { type MetricId, type ScenarioResults, metricById, reduceMetric, seriesOf } from "@/lib/experiment/results"
 import { Sparkline } from "@mantine/charts"
 import { Group, Paper, SimpleGrid, Stack, Text, useComputedColorScheme } from "@mantine/core"
 
@@ -31,16 +31,15 @@ export function HeadlineStats({ run }: { run: ScenarioResults }) {
 }
 
 function HeadlineTile({ run, metric, color }: { run: ScenarioResults; metric: MetricId; color: string }) {
-    const definition = RESULT_METRICS.find((entry) => entry.id === metric)
+    const definition = metricById(metric)
     const reduced = reduceMetric(run, metric)
-    const scale = definition?.sample.scale ?? 1
-    const trace = seriesOf(run, metric).points.map((point) => point.value * scale)
+    const trace = seriesOf(run, metric).points.map((point) => point.value * definition.sample.scale)
 
     return (
         <Paper withBorder radius="md" p="sm">
             <Stack gap={4}>
                 <Text size="xs" c="dimmed">
-                    {definition?.label ?? metric}
+                    {definition.label}
                 </Text>
                 <Group justify="space-between" align="flex-end" wrap="nowrap" gap="xs">
                     <Text size="xl" fw={500} lh={1.1}>

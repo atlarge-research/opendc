@@ -54,6 +54,7 @@ class RedisTelemetryStore(redis: RedisDataSource, private val ttl: Duration) : T
         if (keys.isEmpty()) {
             return emptyMap()
         }
+
         val byName = keys.associateBy { it.toString() }
         val stored =
             try {
@@ -62,6 +63,7 @@ class RedisTelemetryStore(redis: RedisDataSource, private val ttl: Duration) : T
                 LOG.warn("Could not read telemetry for {} runs", keys.size, e)
                 return emptyMap()
             }
+
         return stored.mapNotNull { (name, document) ->
             val key = byName[name] ?: return@mapNotNull null
             document?.let { key to json.decodeFromString(codec, it) }

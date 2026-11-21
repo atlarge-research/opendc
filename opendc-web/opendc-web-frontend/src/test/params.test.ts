@@ -24,4 +24,10 @@ describe("idParam", () => {
     it("passes an id it cannot vouch for through to the server", () => {
         expect(idParam(params("id=not-a-uuid"), "id")).toEqual({ status: "ok", value: "not-a-uuid" })
     })
+
+    it("refuses an id that would address another endpoint once spliced into an API path", () => {
+        for (const raw of ["../me", "a/b", "a?b=1", "a#b", "a b", "%2e%2e"]) {
+            expect(idParam(params(`id=${encodeURIComponent(raw)}`), "id").status).toBe("missing")
+        }
+    })
 })

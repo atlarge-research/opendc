@@ -284,7 +284,7 @@ data class PreviewRequest(
     val spec: JsonElement,
 )
 
-// More than a chart has pixels and no less than a launcher holds, so a live series passes unfolded.
+// Wider than any chart, and at least as many points as a launcher keeps, so a live series can come back unfolded.
 private const val MAX_BUCKETS = 2048
 
 private const val DEFAULT_BUCKETS = "512"
@@ -319,6 +319,7 @@ class ExperimentsResource(
             }
         val window = query.within(Window.of(offset, limit))
         val unitsByExperiment = unitsFor(window.map { it.id })
+
         val items =
             window.map { experiment ->
                 val units = unitsByExperiment[experiment.id].orEmpty()
@@ -332,6 +333,7 @@ class ExperimentsResource(
                     submittedAt = experiment.submittedAt?.toString(),
                 )
             }
+
         return Page(items, query.count())
     }
 
@@ -446,6 +448,7 @@ class ExperimentsResource(
         if (units.isEmpty()) {
             throw notFound("Scenario")
         }
+
         // Oldest attempt first, so the last of each unit's is the one that counts.
         val attempts = ExecutionUnit.findByExperiment(experiment.id).groupBy { it.unit.id }
         return ScenarioDetail(
@@ -483,6 +486,7 @@ class ExperimentsResource(
                 .filter { it.unit.scenarioIndex == index }
                 .map { it.execution }
                 .distinctBy { it.id }
+
         val sections =
             executions.mapNotNull { execution ->
                 val key = logKey(experiment.publicId, execution.publicId)
@@ -498,6 +502,7 @@ class ExperimentsResource(
                     excerpt.lines.forEach(::appendLine)
                 }
             }
+
         if (sections.isEmpty()) {
             throw notFound("Log")
         }
@@ -527,6 +532,7 @@ class ExperimentsResource(
         val units = RunUnit.findByExperiment(experiment.id)
         val exportIntervalsMs = exportIntervalsOf(experiment)
         val charted = results.read(experiment.publicId, units, buckets.coerceIn(1, MAX_BUCKETS), exportIntervalsMs)
+
         return ExperimentResults(
             experimentId = experiment.publicId.toString(),
             exportIntervalMs = exportIntervalsMs.min(),

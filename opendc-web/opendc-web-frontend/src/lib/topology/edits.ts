@@ -55,8 +55,10 @@ export function duplicateDataCenter(plan: TopologyPlan, dataCenter: number): Top
     const source = plan.topology.datacenters[dataCenter]
     const floor = plan.layout.floors[dataCenter]
     if (!source || !floor) return plan
+
     const taken = plan.topology.datacenters.map(dataCenterName)
     const copy = { ...source, name: copyName(dataCenterName(source), taken) }
+
     return {
         topology: { ...plan.topology, datacenters: inserted(plan.topology.datacenters, dataCenter + 1, copy) },
         layout: { ...plan.layout, floors: inserted(plan.layout.floors, dataCenter + 1, floor) },
@@ -97,6 +99,7 @@ export function duplicateCluster(plan: TopologyPlan, at: ClusterAddress): Topolo
         const cluster = located.dataCenter.clusters[at.cluster]
         const origin = located.floor.cells[at.cluster]
         if (!cluster || !origin) return located
+
         const reserved = reserveCell(located.floor, origin)
         return {
             dataCenter: {
@@ -140,10 +143,12 @@ export function updateClusters(
 export function moveClusters(plan: TopologyPlan, from: number, clusters: number[], to: number): TopologyPlan {
     const source = plan.topology.datacenters[from]
     if (from === to || !source || !plan.topology.datacenters[to]) return plan
+
     const moving = [...new Set(clusters)]
         .sort((left, right) => left - right)
         .flatMap((index) => source.clusters[index] ?? [])
     if (moving.length === 0) return plan
+
     const removed = removeClusters(plan, from, clusters)
     return withDataCenter(removed, to, (located) =>
         moving.reduce((target, cluster) => {
@@ -181,6 +186,7 @@ function withHosts(plan: TopologyPlan, at: ClusterAddress, transform: (hosts: Ho
     return withDataCenter(plan, at.dataCenter, (located) => {
         const cluster = located.dataCenter.clusters[at.cluster]
         if (!cluster) return located
+
         const changed = { ...cluster, hosts: transform(cluster.hosts) }
         return {
             ...located,
@@ -202,9 +208,11 @@ function withDataCenter(
     const target = plan.topology.datacenters[dataCenter]
     const floor = plan.layout.floors[dataCenter]
     if (!target || !floor) return plan
+
     const located = { dataCenter: target, floor }
     const changed = transform(located)
     if (changed === located) return plan
+
     return {
         topology: {
             ...plan.topology,

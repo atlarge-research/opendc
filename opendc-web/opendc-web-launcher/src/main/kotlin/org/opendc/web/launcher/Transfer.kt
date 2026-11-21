@@ -182,7 +182,7 @@ private fun <T> send(
         throw LaunchFailure(EXIT_TRANSFER_FAILED, "Interrupted while reaching ${redacted(url)}", e)
     }
 
-/** A refusal worth asking again is thrown as one; anything else ends the transfer here. */
+/** A refusal worth retrying is thrown as an [IOException], which [retrying] retries; any other fails the transfer. */
 private fun expectSuccess(
     url: String,
     status: Int,
@@ -206,6 +206,7 @@ private fun <T> retrying(
             Thread.sleep(wait.toMillis())
         }
     }
+
     return try {
         attempt()
     } catch (e: IOException) {

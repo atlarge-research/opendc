@@ -1,0 +1,2 @@
+# Biome rejects CRLF line endings, which Git on Windows checks out by default.
+* text=auto eol=lf

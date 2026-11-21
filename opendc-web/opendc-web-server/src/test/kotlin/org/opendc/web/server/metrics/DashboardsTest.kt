@@ -69,6 +69,7 @@ class DashboardsTest {
 
         val dashboards = Files.list(DASHBOARDS).use { files -> files.filter { it.extension == "json" }.toList() }
         assertTrue(dashboards.isNotEmpty(), "no dashboards under $DASHBOARDS")
+
         for (dashboard in dashboards) {
             val expressions = expressionsOf(Json.parseToJsonElement(dashboard.readText()))
             assertTrue(expressions.isNotEmpty(), "${dashboard.fileName} has no queries")

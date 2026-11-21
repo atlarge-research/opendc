@@ -46,22 +46,15 @@ export function phaseSince(phase: ExecutionPhase, createdAt: string): string {
 /** Scenario indices as a compact range list: 0-3, 7, 9-10. */
 export function scenarioRanges(indices: readonly number[]): string {
     const sorted = [...new Set(indices)].sort((left, right) => left - right)
-    const ranges: string[] = []
-    let start = sorted[0]
-    let previous = start
-    for (const index of sorted.slice(1)) {
-        if (previous !== undefined && index === previous + 1) {
-            previous = index
-            continue
+    const runs: { first: number; last: number }[] = []
+    for (const index of sorted) {
+        const run = runs.at(-1)
+        if (run !== undefined && index === run.last + 1) {
+            run.last = index
+        } else {
+            runs.push({ first: index, last: index })
         }
-        if (start !== undefined) ranges.push(rangeOf(start, previous ?? start))
-        start = index
-        previous = index
     }
-    if (start !== undefined) ranges.push(rangeOf(start, previous ?? start))
-    return ranges.join(", ")
-}
 
-function rangeOf(start: number, end: number): string {
-    return start === end ? String(start) : `${start}-${end}`
+    return runs.map(({ first, last }) => (first === last ? String(first) : `${first}-${last}`)).join(", ")
 }

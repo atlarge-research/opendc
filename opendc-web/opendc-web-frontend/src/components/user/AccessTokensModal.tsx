@@ -2,8 +2,11 @@
 
 import { TokenRow } from "@/components/user/TokenRow"
 import { TokenSecret } from "@/components/user/TokenSecret"
+import { TableGhost } from "@/components/util/Ghost"
+import { QueryState } from "@/components/util/QueryState"
 import { notifyProblem } from "@/components/util/feedback"
 import { useAccessTokens, useMintToken, useRevokeToken } from "@/lib/api/account"
+import type { AccessToken } from "@/lib/api/types"
 import { Button, Group, Modal, Stack, Table, Text, TextInput } from "@mantine/core"
 import { useState } from "react"
 
@@ -43,24 +46,32 @@ export function AccessTokensModal({ opened, onClose }: Readonly<{ opened: boolea
                         </Button>
                     </Group>
                 </form>
-                {tokens.data && tokens.data.length > 0 ? (
-                    <Table>
-                        <Table.Tbody>
-                            {tokens.data.map((token) => (
-                                <TokenRow
-                                    key={token.id}
-                                    token={token}
-                                    onRevoke={() => revoke.mutate(token.id, { onError: notifyProblem })}
-                                />
-                            ))}
-                        </Table.Tbody>
-                    </Table>
-                ) : (
-                    <Text size="sm" c="dimmed">
-                        No tokens yet.
-                    </Text>
-                )}
+                <QueryState query={tokens} ghost={<TableGhost columns={3} rows={2} />}>
+                    {(loaded) => (
+                        <TokenTable tokens={loaded} onRevoke={(id) => revoke.mutate(id, { onError: notifyProblem })} />
+                    )}
+                </QueryState>
             </Stack>
         </Modal>
+    )
+}
+
+function TokenTable({ tokens, onRevoke }: Readonly<{ tokens: AccessToken[]; onRevoke: (id: string) => void }>) {
+    if (tokens.length === 0) {
+        return (
+            <Text size="sm" c="dimmed">
+                No tokens yet.
+            </Text>
+        )
+    }
+
+    return (
+        <Table>
+            <Table.Tbody>
+                {tokens.map((token) => (
+                    <TokenRow key={token.id} token={token} onRevoke={() => onRevoke(token.id)} />
+                ))}
+            </Table.Tbody>
+        </Table>
     )
 }

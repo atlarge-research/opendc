@@ -71,6 +71,7 @@ class Dispatch(
     fun dispatcher(): Dispatcher {
         val problems = deploymentProblems(config.dispatcher(), storage.kind(), config.telemetryUrl())
         check(problems.isEmpty()) { problems.joinToString("; ") }
+
         return when (config.dispatcher()) {
             DispatcherKind.LOCAL -> dispatchers.localDispatcher()
             DispatcherKind.KUBERNETES -> KubernetesDispatcher.connect(dispatchers.kubernetes().toConfig())
@@ -93,8 +94,8 @@ private val LOOPBACK = setOf("localhost", "::1", "[::1]", "0.0.0.0")
 
 /**
  * What stops this deployment from running on [kind]; empty when nothing does. A pod can neither read
- * this server's disk nor reach its loopback address; a SLURM job reaches only its shared filesystem,
- * which this server stages into itself.
+ * this server's disk nor reach its loopback address. A SLURM job needs neither, because this server
+ * stages its inputs and collects its outputs.
  */
 fun deploymentProblems(
     kind: DispatcherKind,

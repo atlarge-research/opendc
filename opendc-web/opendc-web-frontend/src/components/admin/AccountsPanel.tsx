@@ -51,6 +51,7 @@ function AccountTable({ accounts }: Readonly<{ accounts: AdminAccount[] }>) {
             </Paper>
         )
     }
+
     return (
         <Paper withBorder radius="md" p={0}>
             <Table verticalSpacing="sm" horizontalSpacing="md">
@@ -74,6 +75,7 @@ function AccountTable({ accounts }: Readonly<{ accounts: AdminAccount[] }>) {
 
 function AccountRow({ account }: Readonly<{ account: AdminAccount }>) {
     const handle = account.handle.type === "chosen" ? `@${account.handle.name}` : "no handle yet"
+
     return (
         <Table.Tr>
             <Table.Td>

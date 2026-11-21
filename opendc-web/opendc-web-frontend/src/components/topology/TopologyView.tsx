@@ -27,7 +27,8 @@ export function TopologyView() {
     return <LoadedTopology templateId={topologyId.value} />
 }
 
-// Keyed on the template id so the builder, which owns the document once open, survives saves.
+// The builder owns the document once open, so it is keyed by template id and stays mounted when a save
+// updates the query.
 function LoadedTopology({ templateId }: { templateId: Id }) {
     const template = useTopology(templateId)
 

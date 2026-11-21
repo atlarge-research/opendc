@@ -10,13 +10,12 @@ export const topologyKeys = {
     detail: (templateId: Id) => ["topologies", templateId] as const,
 }
 
-/**
- * What a new topology is created from. The server is the validator and converts a legacy document
- * itself, so an imported file is sent as it was read.
- */
+/** A new topology's name and document, sent as read: the server validates it and converts legacy formats. */
 export interface TopologyDraft {
     name: string
     topology: unknown
+    /** The floor plan to start from, when copying a topology someone has laid out by hand. */
+    layout?: unknown
 }
 
 export function useTopologies(projectId: Id) {
@@ -41,7 +40,7 @@ export function useCreateTopology(projectId: Id) {
         mutationFn: (draft: TopologyDraft) =>
             apiRequest<TopologyTemplate>("api/v1/topologies", {
                 method: "POST",
-                body: { projectId, name: draft.name, topology: draft.topology },
+                body: { projectId, name: draft.name, topology: draft.topology, layout: draft.layout },
             }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: topologyKeys.list(projectId) }),
     })
@@ -73,8 +72,7 @@ export function useSaveTopology(projectId: Id) {
                 method: "PUT",
                 body: { name: save.name, topology: save.topology, layout: save.layout },
             }),
-        // Seed the detail cache with the saved document instead of invalidating it, or the open
-        // editor would unmount while the refetch loads.
+        // Seeds the detail cache rather than invalidating it, which would unmount the open editor while it refetches.
         onSuccess: (template) => {
             queryClient.setQueryData(topologyKeys.detail(template.id), template)
             queryClient.invalidateQueries({ queryKey: topologyKeys.list(projectId) })

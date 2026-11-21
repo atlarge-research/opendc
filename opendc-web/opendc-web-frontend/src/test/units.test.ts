@@ -10,7 +10,7 @@ function base(kind: QuantityKind, wire: string | number): number {
 }
 
 describe("durations", () => {
-    it("reads the ISO-8601 the backend writes them back as", () => {
+    it("reads the ISO-8601 durations the backend also accepts", () => {
         expect(base("time", "PT5M")).toBe(300_000)
         expect(base("time", "PT1H")).toBe(3.6e6)
         expect(base("time", "PT1H30M")).toBe(5.4e6)
@@ -82,6 +82,15 @@ describe("parseQuantity", () => {
         expect(base("dataRate", 1600)).toBe(1600)
     })
 
+    it("reads the canonical spelling the server writes back for every kind", () => {
+        expect(base("frequency", "2600 MHz")).toBe(2600)
+        expect(base("dataSize", "65536 MiB")).toBe(65_536)
+        expect(base("dataRate", "900000000000 bps")).toBe(900_000_000_000 / 1024)
+        expect(base("power", "300 W")).toBe(300)
+        expect(base("energy", "360000000 J")).toBe(3.6e8)
+        expect(base("time", "300000 ms")).toBe(300_000)
+    })
+
     it("treats data-size case as significant, because the backend does", () => {
         expect(base("dataSize", "1 GiB")).toBe(1024)
         expect(base("dataSize", "1 gib")).toBe(1024 / 8)
@@ -96,9 +105,8 @@ describe("parseQuantity", () => {
     })
 
     it("rejects units the backend does not accept, rather than guessing", () => {
-        expect(parseQuantity("power", "5 MW").status).toBe("invalid")
+        expect(parseQuantity("power", "5 mW").status).toBe("invalid")
         expect(parseQuantity("frequency", "1 THz").status).toBe("invalid")
-        expect(parseQuantity("power", "1 watt").status).toBe("invalid")
         expect(parseQuantity("dataSize", "1 PiB").status).toBe("invalid")
     })
 
@@ -175,8 +183,8 @@ describe("amountIn", () => {
         expect(amountIn("power", 10_000, "kW")).toBe(10)
     })
 
-    // 2600 / 1000 is 2.5999999999999996 in floating point, and the SDK's own "%f" formatter writes
-    // "10.000000 KWatts". Neither may reach the box the reader types into.
+    // 2600 / 1000 is 2.5999999999999996 in floating point, and a stored "10.000000 KWatts" carries
+    // trailing zeros. Neither may reach the box the reader types into.
     it("shows a clean number for values the backend wrote", () => {
         expect(amountIn("power", base("power", "10.000000 KWatts"), "kW")).toBe(10)
         expect(amountIn("frequency", base("frequency", "2.6 GHz"), "GHz")).toBe(2.6)

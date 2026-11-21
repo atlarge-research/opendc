@@ -2,8 +2,8 @@
 
 import { openEditTrace } from "@/components/traces/EditTraceModal"
 import { openShareTrace } from "@/components/traces/ShareTraceModal"
+import { startDownload } from "@/components/util/download"
 import { notifyProblem } from "@/components/util/feedback"
-import { startDownload } from "@/lib/api/downloads"
 import { traceContentLink, useDeleteTrace } from "@/lib/api/traces"
 import type { Trace } from "@/lib/api/types"
 import { ActionIcon, Menu } from "@mantine/core"
@@ -55,7 +55,7 @@ export function TraceActions({ trace }: { trace: Trace }) {
 function confirmDelete(trace: Trace, onConfirm: () => void): void {
     modals.openConfirmModal({
         title: `Delete ${trace.slug}?`,
-        children: "The files go with it. An experiment that already references this trace keeps working.",
+        children: "The trace and its files are removed. A trace that an experiment references cannot be deleted.",
         labels: { confirm: "Delete", cancel: "Keep" },
         confirmProps: { color: "red" },
         onConfirm,

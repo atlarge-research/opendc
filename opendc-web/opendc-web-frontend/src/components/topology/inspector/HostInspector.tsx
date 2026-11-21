@@ -2,7 +2,7 @@
 
 import { DEFAULT_POWER_MODEL, PowerModelFields } from "@/components/topology/inspector/PowerModelFields"
 import { QuantityInput } from "@/components/topology/inspector/QuantityInput"
-import type { GpuSpec, HostSpec } from "@/lib/topology/spec"
+import type { GpuSpec, HostSpec, PowerSpec } from "@/lib/topology/spec"
 import { hostName } from "@/lib/topology/spec"
 import { Accordion, Group, NumberInput, Stack, Switch, TextInput } from "@mantine/core"
 
@@ -156,8 +156,8 @@ function GpuFields({
 }: {
     gpu: GpuSpec
     onChange: (next: GpuSpec) => void
-    powerModel: Parameters<typeof PowerModelFields>[0]["model"]
-    onPowerChange: (next: Parameters<typeof PowerModelFields>[0]["model"]) => void
+    powerModel: PowerSpec
+    onPowerChange: (next: PowerSpec) => void
 }) {
     return (
         <Stack gap="xs">
@@ -202,6 +202,7 @@ function GpuFields({
     )
 }
 
+// A half-typed entry such as "-" arrives as text and must not reach the document as NaN.
 function numberOf(value: string | number): number {
-    return typeof value === "number" ? value : (Number(value) ?? 0)
+    return typeof value === "number" ? value : Number(value) || 0
 }

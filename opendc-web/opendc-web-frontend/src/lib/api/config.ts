@@ -2,7 +2,7 @@ import { ApiError, UNREACHABLE_TITLE, apiUrl } from "@/lib/api/client"
 import type { DeploymentConfig } from "@/lib/api/types"
 import { useQuery } from "@tanstack/react-query"
 
-/** How this deployment signs people in, fetched once and without credentials since it decides them. */
+/** How this deployment signs people in. Fetched once and without credentials, since it decides what they are. */
 export function useDeploymentConfig() {
     return useQuery({
         queryKey: ["config"],

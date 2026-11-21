@@ -2,7 +2,6 @@
 
 import { Auth0Bridge } from "@/components/layout/Auth0Bridge"
 import type { AuthSettings } from "@/lib/api/types"
-import { config } from "@/lib/config"
 import { Auth0Provider } from "@auth0/auth0-react"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
@@ -22,7 +21,8 @@ export function Auth0Session({ settings, children }: Readonly<{ settings: Auth0S
             clientId={settings.clientId}
             authorizationParams={{
                 audience: settings.audience,
-                redirect_uri: `${window.location.origin}${config.basePath}/`,
+                // Auth0 matches registered URLs exactly, and deployments register the bare origin.
+                redirect_uri: window.location.origin,
             }}
             cacheLocation="localstorage"
             useRefreshTokens

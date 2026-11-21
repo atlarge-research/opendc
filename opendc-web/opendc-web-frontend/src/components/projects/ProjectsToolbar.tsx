@@ -1,11 +1,10 @@
 "use client"
 
 import { type ProjectFilterValue, useProjectSearch } from "@/components/projects/projectList"
-import type { Project } from "@/lib/api/types"
 import { CloseButton, Group, SegmentedControl, TextInput, useComputedColorScheme } from "@mantine/core"
 import { IconSearch } from "@tabler/icons-react"
 
-const options = [
+const FILTER_OPTIONS = [
     { label: "All projects", value: "all" },
     { label: "My projects", value: "own" },
     { label: "Shared with me", value: "shared" },
@@ -38,13 +37,14 @@ function ProjectFilter({
     disabled: boolean
 }) {
     const scheme = useComputedColorScheme()
+
     return (
         <SegmentedControl
             color={scheme === "dark" ? "gray.7" : "gray.4"}
             autoContrast
             value={value}
             onChange={(next) => onChange(next as ProjectFilterValue)}
-            data={options}
+            data={FILTER_OPTIONS}
             disabled={disabled}
             p={0}
         />
@@ -54,6 +54,7 @@ function ProjectFilter({
 function ProjectSearch() {
     const query = useProjectSearch((state) => state.query)
     const setQuery = useProjectSearch((state) => state.setQuery)
+
     return (
         <TextInput
             value={query}

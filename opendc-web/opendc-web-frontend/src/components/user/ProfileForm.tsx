@@ -1,7 +1,6 @@
 "use client"
 
-import { HANDLE_PATTERN, HANDLE_RULE } from "@/lib/account/handle"
-import { type ProfileChange, useUpdateProfile } from "@/lib/api/account"
+import { HANDLE_PATTERN, HANDLE_RULE, type ProfileChange, useUpdateProfile } from "@/lib/api/account"
 import { ApiError } from "@/lib/api/client"
 import { Button, Stack, TextInput } from "@mantine/core"
 import { useState } from "react"
@@ -15,9 +14,12 @@ export function ProfileForm({
     const [handle, setHandle] = useState(initial.handle)
     const [displayName, setDisplayName] = useState(initial.displayName)
     const update = useUpdateProfile()
+
     const problem = update.error instanceof ApiError ? update.error.problem : undefined
     const issueAt = (path: string) => problem?.issues.find((issue) => issue.path === path)?.message
     const malformed = handle.length > 0 && !HANDLE_PATTERN.test(handle)
+    const conflict = problem?.status === 409 ? problem.title : undefined
+    const handleError = malformed ? HANDLE_RULE : (issueAt("handle") ?? conflict)
 
     return (
         <form
@@ -32,11 +34,7 @@ export function ProfileForm({
                     description="Prefixes the traces you share, and is how others add you to a project."
                     value={handle}
                     onChange={(event) => setHandle(event.currentTarget.value.toLowerCase())}
-                    error={
-                        malformed
-                            ? HANDLE_RULE
-                            : (issueAt("handle") ?? (problem?.status === 409 ? problem.title : undefined))
-                    }
+                    error={handleError}
                     required
                 />
                 <TextInput

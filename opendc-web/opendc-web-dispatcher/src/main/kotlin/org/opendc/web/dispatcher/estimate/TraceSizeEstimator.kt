@@ -24,6 +24,7 @@ package org.opendc.web.dispatcher.estimate
 
 import org.opendc.sdk.model.failure.NoFailureSpec
 import org.opendc.sdk.model.scenario.ScenarioSpec
+import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.telemetry.OutputFileSpec
 import org.opendc.sdk.model.topology.TopologySpec
 import org.opendc.sdk.model.workload.EfficientTraceWorkloadSpec
@@ -117,19 +118,19 @@ class TraceSizeEstimator(private val coefficients: EstimatorCoefficients) : Reso
 
         return UnitEstimate(
             peakMemoryMb = memory,
-            cpuSeconds = seconds * exportMultiplier(scenario, hosts) * modelMultiplier(scenario),
+            cpuSeconds = seconds * exportMultiplier(scenario.exportModel, hosts) * modelMultiplier(scenario),
         )
     }
 
     /** How much writing the host table slows the run. Halving the export interval doubles the term. */
     private fun exportMultiplier(
-        scenario: ScenarioSpec,
+        export: ExportSpec,
         hosts: Int,
     ): Double {
-        val export = scenario.exportModel
         if (OutputFileSpec.HOST !in export.filesToExport) {
             return 1.0
         }
+
         val intervalMs = export.exportInterval.toMsLong().coerceAtLeast(1L)
         return 1.0 + coefficients.exportCostPerHost * hosts * (DEFAULT_EXPORT_INTERVAL_MS.toDouble() / intervalMs)
     }

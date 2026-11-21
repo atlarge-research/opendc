@@ -25,6 +25,7 @@ package org.opendc.web.launcher
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.opendc.common.units.TimeDelta
 import org.opendc.sdk.model.dsl.experiment
 import org.opendc.sdk.model.dsl.gib
@@ -46,7 +47,7 @@ import org.opendc.sdk.runner.OpenDC
 import org.opendc.sdk.runner.provision.FileSystemResourceProvisioner
 import org.opendc.sdk.runner.telemetry.sink.CallbackSink
 import org.opendc.sdk.runner.telemetry.sink.OutputSink
-import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.math.abs
 
 private const val RUN_MS = 10 * 60 * 1000L
@@ -57,6 +58,9 @@ private const val RUN_MS = 10 * 60 * 1000L
  * number of points. Getting either wrong misreports the run rather than merely blurring it.
  */
 class TelemetrySinkTest {
+    @TempDir
+    lateinit var resources: Path
+
     @Test
     fun `folds the hosts reporting at one instant into a single reading`() {
         val telemetry = TelemetrySink()
@@ -159,7 +163,7 @@ class TelemetrySinkTest {
         exportInterval: TimeDelta,
         sinks: List<OutputSink>,
     ) {
-        val runner = OpenDC.builder().provisioner(FileSystemResourceProvisioner(Files.createTempDirectory("telemetry")))
+        val runner = OpenDC.builder().provisioner(FileSystemResourceProvisioner(resources))
         sinks.forEach { runner.sink(it) }
         runner.parallelism(1).build().simulate(design(hosts, exportInterval))
     }

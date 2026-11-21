@@ -60,12 +60,12 @@ private val SWEEP_PERIOD = Duration.ofHours(1)
  * Runs each execution as one batch job on a SLURM cluster whose compute nodes cannot reach this server.
  *
  * Launching only records the execution. A transfer pool then uploads the launcher once per version,
- * caches every input on the shared filesystem and rewrites the manifest to use them, and submits the
- * job with a wrapper that records how it ended, since the cluster keeps no accounting to ask. Once
- * the job leaves the queue, every certified unit is copied back to the server's signed targets.
+ * caches every input on the shared filesystem and rewrites the manifest to use them. The job is
+ * submitted with a wrapper that records how it ended, since the cluster keeps no accounting to ask.
+ * Once the job leaves the queue, every certified unit is copied back to the server's signed targets.
  *
- * One control thread owns every execution's state, polls the queue and delivers events. It assumes it
- * is the only dispatcher using its remote root.
+ * One control thread owns every execution's state, submits, polls the queue and delivers events. It
+ * assumes it is the only dispatcher using its remote root.
  */
 class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
     private val ssh = SshConnection(config.ssh)
@@ -120,6 +120,7 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
             is ClusterView.Unreachable -> return Launch.Unavailable(current.reason)
             is ClusterView.Reachable -> {}
         }
+
         tracked[request.executionId] = Tracked.Staging(request, Instant.now())
         transfers.execute { stage(request) }
         return Launch.Accepted
@@ -144,10 +145,12 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
         try {
             val remote = reachable().remote
             val launcher = remote.launcher()
+
             var text = ""
             fetch(request.manifestUrl) { text = it.readBytes().decodeToString() }
             val original = SdkJson.json.decodeFromString(LaunchManifest.serializer(), text)
             original.inputs.forEach(remote::stage)
+
             val cap = slot().timeCap
             val limit = cap.clamp(request.grant.timeLimitSeconds)
             val limits = Limits(limit, capped = cap is TimeCap.Limited && limit >= cap.seconds)
@@ -164,7 +167,11 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
         launcher: String,
     ) {
         when (val state = tracked[id]) {
-            is Tracked.Staging -> submit(id, state.request, state.since, launcher)
+            is Tracked.Staging -> {
+                // Recorded first, so a submission that fails part of the way is tried again by the next poll.
+                tracked[id] = Tracked.Unsubmitted(state.request, state.since, "its submission did not complete", launcher)
+                submit(id, state.request, state.since, launcher)
+            }
             // Cancelled while it was being staged: what was put on the cluster for it goes.
             else -> reachable().remote.remove(id)
         }
@@ -178,10 +185,11 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
         launcher: String,
     ) {
         val remote = reachable().remote
-        if (parseQueue(ssh.exec(squeueCommand(config.ssh.user)).stdout).containsKey(id)) {
+        if (parseQueue(listing(squeueCommand(config.ssh.user))).containsKey(id)) {
             tracked[id] = Tracked.Submitted(remote.submittedAt(id), started = false)
             return
         }
+
         val cap = slot().timeCap
         val minutes =
             when (cap) {
@@ -190,6 +198,7 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
             }
         val script = JobScript(remote.layout.execution(id), launcher, config.java)
         val command = sbatchCommand(id, request.grant, minutes.coerceAtLeast(1), script, config.partition, config.sbatchOptions)
+
         when (val submission = parseSubmission(ssh.exec(command))) {
             is Submission.Queued -> {
                 val now = Instant.now()
@@ -207,13 +216,14 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
             val remote = reachable().remote
             val queue =
                 try {
-                    parseQueue(ssh.exec(squeueCommand(config.ssh.user)).stdout)
+                    parseQueue(listing(squeueCommand(config.ssh.user)))
                 } catch (e: Exception) {
                     // A queue that could not be read must never look like jobs that vanished.
                     disconnect(e)
                     return@guarded
                 }
             refreshPartition(remote)
+
             val now = Instant.now()
             for ((id, state) in tracked.toList()) {
                 when (state) {
@@ -230,6 +240,7 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
                     is Tracked.Ending -> deliverEnding(id, state.outcome)
                 }
             }
+
             if (reconciled && Duration.between(lastSweep, now) >= SWEEP_PERIOD) {
                 sweep(remote, queue)
                 lastSweep = now
@@ -275,6 +286,7 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
         if (!recorded && Duration.between(state.since, now) < config.recordGrace) {
             return
         }
+
         tracked[id] = Tracked.Collecting
         transfers.execute {
             try {
@@ -300,6 +312,7 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
         if (records.stop is Stop.None) {
             remote.collect(id)
         }
+
         return when (val ending = ending(records, tail)) {
             is JobEnding.Ended -> ending.outcome
             is JobEnding.Vanished -> ExitOutcome(ExitReason.UNKNOWN, NO_EXIT_CODE, ending.message, ending.span, ending.peak, tail)
@@ -362,7 +375,8 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
 
     private fun reconcileNow(ids: List<UUID>): Map<UUID, PlatformVerdict> {
         val remote = reachable().remote
-        val queue = parseQueue(ssh.exec(squeueCommand(config.ssh.user)).stdout)
+        val queue = parseQueue(listing(squeueCommand(config.ssh.user)))
+
         val verdicts =
             ids.associateWith { id ->
                 val job = queue[id]
@@ -384,6 +398,7 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
                     else -> PlatformVerdict.Unknown
                 }
             }
+
         reconciled = true
         return verdicts
     }
@@ -400,6 +415,7 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
         if (records.stop is Stop.None) {
             remote.collect(id)
         }
+
         return when (val ending = ending(records, remote.logTail(id))) {
             is JobEnding.Ended -> {
                 tracked[id] = Tracked.Ending(ending.outcome)
@@ -423,6 +439,7 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
             }
             remote.remove(id)
         }
+
         remote.sweep(config.cacheRetention)
     }
 
@@ -443,13 +460,15 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
         val java = ssh.exec(listOf(config.java, "-version"))
         val version = javaVersionOf(java.stderr + java.stdout)
         check(version >= MINIMUM_JAVA) { "${config.java} is Java $version; the launcher needs $MINIMUM_JAVA or newer" }
+
         val root =
             ssh.sftp { sftp ->
                 sftp.mkdirs(config.remoteRoot)
                 sftp.canonicalPath(config.remoteRoot)
             }
         val remote = RemoteExecutions(ssh, RemoteLayout(root), distribution)
-        val partition = parsePartition(ssh.exec(sinfoCommand(config.partition)).stdout, config.partition)
+
+        val partition = parsePartition(listing(sinfoCommand(config.partition)), config.partition)
         if (partition.smallestNodeMemoryMb > 0 && config.slot.memoryMb > partition.smallestNodeMemoryMb) {
             LOG.warn("A slot of {} MB is more than the smallest node's {} MB", config.slot.memoryMb, partition.smallestNodeMemoryMb)
         }
@@ -458,17 +477,26 @@ class SlurmDispatcher(private val config: SlurmDispatcherConfig) : Dispatcher {
 
     private fun refreshPartition(remote: RemoteExecutions) {
         try {
-            view = ClusterView.Reachable(remote, parsePartition(ssh.exec(sinfoCommand(config.partition)).stdout, config.partition))
+            view = ClusterView.Reachable(remote, parsePartition(listing(sinfoCommand(config.partition)), config.partition))
         } catch (e: Exception) {
             LOG.debug("Could not read the partition; keeping the last view", e)
         }
+    }
+
+    /** What [command] printed. One that failed throws, so it can never read as an empty queue or partition. */
+    private fun listing(command: List<String>): String {
+        val result = ssh.exec(command)
+        if (result.exitCode != 0) {
+            throw IOException("${command.first()} exited with ${result.exitCode}: ${result.stderr.trim()}")
+        }
+        return result.stdout
     }
 
     private fun disconnect(cause: Exception) {
         view = ClusterView.Unreachable(cause.message ?: cause.javaClass.name, capacity())
     }
 
-    /** Runs [block] on the control thread, so one failing pass never stops the schedule. */
+    /** Runs [block], logging a failure instead of throwing it, so one failing pass never stops the schedule. */
     private inline fun guarded(block: () -> Unit) {
         try {
             block()

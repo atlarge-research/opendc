@@ -14,7 +14,7 @@ import { ActionIcon, Button, Checkbox, Divider, Group, NumberInput, Stack } from
 import { IconPlus, IconTrash } from "@tabler/icons-react"
 import { Fragment } from "react"
 
-// Lower only shrinks the interval tenfold per checkpoint, and the simulator rejects zero.
+// The simulator rejects a scaling of zero or less.
 const MIN_SCALING = 0.1
 
 // The model spells "no checkpointing" as a null entry, which has no settings, so it is a checkbox.
@@ -25,7 +25,7 @@ export function CheckpointAxis({
     const configured = entries.filter((entry) => entry !== null)
     const includesNone = entries.length > configured.length
 
-    // Null first, so adding or dropping a configuration keeps the other scenarios' indices.
+    // The no-checkpointing entry always comes first.
     const write = (none: boolean, rest: CheckpointSpec[]) => onChange([...(none ? [null] : []), ...rest])
 
     const setField = (position: number, change: Partial<CheckpointSpec>) =>

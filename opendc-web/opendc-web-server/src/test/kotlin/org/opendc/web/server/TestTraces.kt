@@ -53,6 +53,7 @@ object TestTraces {
             trace.createdAt = Instant.now()
             trace.updatedAt = trace.createdAt
             trace.persist()
+
             if (finished) {
                 for (table in kind.tables) {
                     val part = TracePart()
@@ -61,6 +62,7 @@ object TestTraces {
                     part.persist()
                 }
             }
+
             TestTrace(trace.publicId, trace.slug)
         }
 }

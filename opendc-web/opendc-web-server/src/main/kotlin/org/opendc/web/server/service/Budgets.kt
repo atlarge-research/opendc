@@ -98,6 +98,7 @@ fun admit(
     if (windows.isEmpty()) {
         return
     }
+
     val reserved = RunUnit.reservedBy(payer.id)
     val short =
         windows.mapNotNull { window ->
@@ -113,6 +114,7 @@ fun admit(
                 )
             }
         }
+
     if (short.isNotEmpty()) {
         throw conflict("Not enough simulation budget left", short)
     }
@@ -151,6 +153,7 @@ fun chargedSeconds(
             ExitReason.OK, ExitReason.SIMULATION_ERROR, ExitReason.INVALID_SPEC, ExitReason.CANCELLED -> true
             ExitReason.OOM, ExitReason.TIMEOUT, ExitReason.WALLTIME, ExitReason.UNKNOWN, ExitReason.REJECTED -> false
         }
+
     return when (span) {
         PlatformSpan.NotStarted -> 0.0
         is PlatformSpan.Ran -> if (billable) coreSeconds(span.startedAt, span.endedAt, parallelism) else 0.0

@@ -109,11 +109,12 @@ class TraceImportsResource(
         disposal.claim(slug, owner)
 
         val now = Instant.now()
-        val trace = Trace.unfinished(slug, kind, owner, request.description.cleaned(), now)
+        val trace = Trace.unfinished(slug, kind, owner, request.description.validDescription(), now)
         val import = TraceImport()
         import.trace = trace
         import.createdAt = now
         import.persist()
+
         requests.fire(ImportRequested(import.publicId, trace.publicId, sources))
         return Response.status(202).entity(import.toWire()).build()
     }
@@ -129,6 +130,7 @@ class TraceImportsResource(
         if (import.trace.owner?.id != identity.currentUser().id) {
             throw notFound("Import")
         }
+
         when (import.progress) {
             is ImportProgress.Running -> throw conflict("This import is still running")
             is ImportProgress.Succeeded -> import.delete()

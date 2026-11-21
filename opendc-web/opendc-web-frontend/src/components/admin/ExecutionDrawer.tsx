@@ -1,7 +1,7 @@
 "use client"
 
 import { ExecutionLog } from "@/components/admin/ExecutionLog"
-import { formatDuration, formatMemory } from "@/components/format"
+import { countOf, formatDuration, formatMemory } from "@/components/format"
 import { LineGhost } from "@/components/util/Ghost"
 import { QueryState } from "@/components/util/QueryState"
 import { notifyProblem } from "@/components/util/feedback"
@@ -13,6 +13,7 @@ import { IconRefresh } from "@tabler/icons-react"
 
 export function ExecutionDrawer({ id, onClose }: Readonly<{ id: string | undefined; onClose: () => void }>) {
     const detail = useAdminExecution(id)
+
     return (
         <Drawer opened={id !== undefined} onClose={onClose} position="right" size="xl" title="Execution">
             {id !== undefined && (
@@ -52,7 +53,7 @@ function ExecutionDetail({ detail }: Readonly<{ detail: AdminExecutionDetail }>)
                 </Text>
             )}
             <Text size="sm" c="dimmed">
-                {execution.cores} cores, {formatMemory(execution.memoryRequestMb)}, at most{" "}
+                {countOf(execution.cores, "core")}, {formatMemory(execution.memoryRequestMb)}, at most{" "}
                 {formatDuration(execution.timeLimitSeconds)}
             </Text>
             {retryableUnits > 0 && (

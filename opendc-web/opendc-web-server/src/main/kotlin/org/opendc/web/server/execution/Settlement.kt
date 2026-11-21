@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.UUID
 
-/** One run, as its outcome marker is keyed. */
+/** The `(scenario, seed)` a unit's outcome marker is keyed by. */
 private data class Run(
     val scenarioIndex: Int,
     val seed: Long,
@@ -108,6 +108,7 @@ class Settlement(
             throw conflict("This execution is still live")
         }
         val failed = ExecutionUnit.findRetryable(execution.id).ifEmpty { throw conflict("Nothing in this execution is left to retry") }
+
         val slot = dispatcher.slot()
         val policy = config.toPolicy()
         return failed.groupBy { checkNotNull(it.exitReason) { "a failed unit records why" } }.flatMap { (reason, rows) ->
@@ -155,9 +156,11 @@ class Settlement(
             LOG.warn("Ignoring an outcome for an execution this server does not know: {}", executionId)
             return null
         }
+
         if (execution.state.isTerminal) {
             return null
         }
+
         return Pending(
             experimentId = execution.experiment.publicId,
             runs = ExecutionUnit.findByExecution(execution.id).map { Run(it.unit.scenarioIndex, it.unit.seed) },
@@ -174,6 +177,7 @@ class Settlement(
         if (!store.exists(key)) {
             return null
         }
+
         return try {
             store.open(key).use { SdkJson.json.decodeFromString(UnitOutcome.serializer(), it.readBytes().decodeToString()) }
         } catch (e: IllegalArgumentException) {
@@ -192,6 +196,7 @@ class Settlement(
         if (execution.state.isTerminal) {
             return
         }
+
         val now = Instant.now()
         execution.settle(stateFor(outcome.reason), outcome, now)
         metrics.settled(outcome.reason)
@@ -224,6 +229,7 @@ class Settlement(
                 UnitVerdict.Cancelled -> unit.state = UnitState.CANCELLED
             }
         }
+
         for ((reason, group) in retries) {
             retry(execution, reason, group, attempt)
         }
@@ -248,6 +254,7 @@ class Settlement(
             group.forEach { it.unit.state = UnitState.FAILED }
             return
         }
+
         val next =
             when (attempt) {
                 Attempt.NEXT -> execution.attempt + 1

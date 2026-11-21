@@ -11,8 +11,8 @@ import type { ReactNode } from "react"
 
 /**
  * Replaces the page when nobody is signed in, the account is deactivated or has no handle yet, or the
- * API is unreachable. While loading the page renders anyway, so requests are not queued behind the
- * session; the server, not this gate, is what guards the data.
+ * API is unreachable. While the profile loads the page renders anyway: the server guards the data,
+ * not this gate.
  */
 export function AuthGate({ children }: Readonly<{ children: ReactNode }>) {
     const auth = useAuth()

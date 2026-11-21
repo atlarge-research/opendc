@@ -95,6 +95,7 @@ export function clusterAt(floor: FloorLayout, cell: FloorCell): CellOccupant {
 export function placeOnFloor(floor: FloorLayout, cluster: number, cell: FloorCell): FloorLayout {
     const current = floor.cells[cluster]
     if (!current || !withinBounds(cell, floor.size)) return floor
+
     const occupant = clusterAt(floor, cell)
     const cells = floor.cells.map((existing, index) => {
         if (index === cluster) return cell
@@ -124,6 +125,7 @@ function claimFrom(floor: FloorLayout, start: number): { floor: FloorLayout; cel
     const taken = new Set(floor.cells.map(key))
     const scan = scanFree(floor.size, taken, start)
     if (withinBounds(scan.cell, floor.size)) return { floor, cell: scan.cell }
+
     const size = { width: floor.size.width, height: floor.size.height + 1 }
     return { floor: { ...floor, size }, cell: scanFree(size, taken, 0).cell }
 }

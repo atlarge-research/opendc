@@ -256,6 +256,7 @@ class TelemetryResourceTest {
                 {"metric":"${ResultMetric.HOST_CPU_UTILIZATION.id}","points":[$points]}
             ]}]}
             """.trimIndent()
+
         ApiTest
             .requestJson()
             .header("Authorization", "Bearer ${tokenFor(experiment)}")

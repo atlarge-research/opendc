@@ -60,8 +60,8 @@ export const RESULT_METRICS = [
         table: "powerSource",
         column: "energy_usage",
         label: "Energy used",
-        description: "Energy drawn from the power sources since the previous sample.",
-        reduce: "sum",
+        description: "Energy drawn from the power sources since the start of the run.",
+        reduce: "last",
         sample: { unit: "kWh", scale: 1 / JOULES_PER_KWH, decimals: 2 },
         total: { unit: "kWh", scale: 1 / JOULES_PER_KWH, decimals: 0 },
     },
@@ -70,8 +70,8 @@ export const RESULT_METRICS = [
         table: "powerSource",
         column: "carbon_emission",
         label: "Carbon emitted",
-        description: "Operational carbon released since the previous sample.",
-        reduce: "sum",
+        description: "Operational carbon released since the start of the run.",
+        reduce: "last",
         sample: { unit: "g", scale: 1, decimals: 0 },
         total: { unit: "kg", scale: 0.001, decimals: 1 },
     },
@@ -82,8 +82,9 @@ export const RESULT_METRICS = [
         label: "Carbon intensity",
         description: "Carbon released per unit of energy drawn from the grid at that moment.",
         reduce: "mean",
-        sample: { unit: "g/kWh", scale: 1, decimals: 0 },
-        total: { unit: "g/kWh", scale: 1, decimals: 0 },
+        // The launcher reports grams per joule.
+        sample: { unit: "g/kWh", scale: JOULES_PER_KWH, decimals: 0 },
+        total: { unit: "g/kWh", scale: JOULES_PER_KWH, decimals: 0 },
     },
     {
         id: "service.tasks_active",
@@ -189,8 +190,9 @@ export function simulatedSpan(results: ExperimentResults): number {
 
 export type ReducedValue = { status: "ok"; value: number } | { status: "empty" }
 
+/** True from submission until every scenario has settled, including before the first one reports. */
 export function isLiveResults(results: ExperimentResults): boolean {
-    return results.scenarios.length > 0 && !results.complete
+    return !results.complete
 }
 
 export function metricById(id: MetricId): ResultMetric {
@@ -215,6 +217,7 @@ export function reduceSeries(points: readonly ResultPoint[], mode: ReduceMode): 
     const values = points.map((point) => point.value)
     if (mode === "last") return { status: "ok", value: last.value }
     if (mode === "max") return { status: "ok", value: Math.max(...values) }
+
     const total = values.reduce((sum, value) => sum + value, 0)
     return { status: "ok", value: mode === "sum" ? total : total / values.length }
 }

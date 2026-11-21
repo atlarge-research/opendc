@@ -40,9 +40,10 @@ export function DraftEditor({ experiment }: { experiment: Experiment }) {
     const prefabs = useCatalog("failure-prefabs")
     const canEdit = usePermission(experiment.projectId, "edit")
 
+    // Flushed on unmount, or an edit made just before switching tab or page would never be saved.
     const persist = useDebouncedCallback(
         (next: ExperimentSpec) => save.mutate({ name: experiment.name, spec: next }, { onError: notifyProblem }),
-        SAVE_DELAY_MS,
+        { delay: SAVE_DELAY_MS, flushOnUnmount: true },
     )
 
     const edit = (change: (current: ExperimentSpec) => ExperimentSpec) =>

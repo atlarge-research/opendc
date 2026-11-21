@@ -45,13 +45,16 @@ export function brokenClusters(issues: DocumentIssue[], dataCenter: number, coun
 function validateDataCenter(dataCenter: DataCenterSpec, index: number): DocumentIssue[] {
     const path = dataCenterPath(index)
     const issues: DocumentIssue[] = []
+
     if (dataCenter.clusters.length === 0) issues.push({ path: `${path}.clusters`, message: "must not be empty" })
     dataCenter.clusters.forEach((cluster, at) =>
         issues.push(...validateCluster(cluster, clusterPath({ dataCenter: index, cluster: at }))),
     )
+
     if (dataCenter.powerSource?.maxPower !== undefined) {
         issues.push(...measurement("power", dataCenter.powerSource.maxPower, `${path}.powerSource.maxPower`))
     }
+
     return issues
 }
 
@@ -64,13 +67,16 @@ function validateCluster(cluster: ClusterSpec, path: string): DocumentIssue[] {
 
 function validateHost(host: HostSpec, path: string): DocumentIssue[] {
     const issues: DocumentIssue[] = []
+
     if (hostCount(host) <= 0) issues.push({ path: `${path}.count`, message: "must be > 0" })
     issues.push(...validateCpu(host.cpu, `${path}.cpu`))
     issues.push(...measurement("dataSize", host.memory.size, `${path}.memory.size`))
+
     if (host.cpuPowerModel) issues.push(...validatePowerSpec(host.cpuPowerModel, `${path}.cpuPowerModel`))
     if (host.gpu && host.gpuPowerModel) {
         issues.push(...validatePowerSpec(host.gpuPowerModel, `${path}.gpuPowerModel`))
     }
+
     return issues
 }
 
@@ -100,13 +106,15 @@ function validatePowerSpec(power: PowerSpec, path: string): DocumentIssue[] {
 
 function validateMaxIdle(power: { maxPower: Quantity; idlePower: Quantity }, path: string): DocumentIssue[] {
     const issues: DocumentIssue[] = []
-    const max = parseQuantity("power", power.maxPower)
-    const idle = parseQuantity("power", power.idlePower)
     issues.push(...measurement("power", power.maxPower, `${path}.maxPower`))
     issues.push(...measurement("power", power.idlePower, `${path}.idlePower`))
+
+    const max = parseQuantity("power", power.maxPower)
+    const idle = parseQuantity("power", power.idlePower)
     if (max.status === "ok" && idle.status === "ok" && max.base < idle.base) {
         issues.push({ path: `${path}.maxPower`, message: "must be >= idlePower" })
     }
+
     return issues
 }
 

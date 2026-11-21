@@ -73,6 +73,7 @@ class LocalObjectStoreTest {
     fun `storing over an object replaces it`() {
         val store = store()
         store.put(key, "first".byteInputStream())
+
         store.put(key, "second attempt".byteInputStream())
 
         assertEquals("second attempt", store.open(key).use { it.readBytes().decodeToString() })
@@ -82,9 +83,10 @@ class LocalObjectStoreTest {
     fun `an object reports its presence and can be removed`() {
         val store = store()
         store.put(key, "transient".byteInputStream())
-
         assertTrue(store.exists(key))
+
         store.delete(key)
+
         assertFalse(store.exists(key))
         // Deleting what is already gone must not throw.
         store.delete(key)
@@ -106,6 +108,15 @@ class LocalObjectStoreTest {
             listOf("results/one/0/seed=0/host.parquet", "results/one/0/seed=1/service.parquet"),
             store.list("results/one"),
         )
+    }
+
+    @Test
+    fun `listing one run leaves out a run whose name only starts the same`() {
+        val store = store()
+        store.put("results/one/0/seed=1/host.parquet", "a".byteInputStream())
+        store.put("results/one/0/seed=10/host.parquet", "b".byteInputStream())
+
+        assertEquals(listOf("results/one/0/seed=1/host.parquet"), store.list("results/one/0/seed=1"))
     }
 
     @Test
@@ -139,9 +150,10 @@ class LocalObjectStoreTest {
     @Test
     fun `an upload is complete once the file is there`() {
         val store = store()
-
         assertFalse(store.completeUpload(key))
+
         store.put(key, "arrived".byteInputStream())
+
         assertTrue(store.completeUpload(key))
     }
 

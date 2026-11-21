@@ -98,6 +98,7 @@ fun authSettings(
     config: Config,
 ): AuthSettings {
     val tenantEnabled = config.getOptionalValue("quarkus.oidc.tenant-enabled", Boolean::class.java).orElse(true)
+
     return when (mode) {
         AuthMode.ANONYMOUS -> {
             check(!tenantEnabled) { "opendc.auth.mode=anonymous cannot run with quarkus.oidc.tenant-enabled=true" }
@@ -105,6 +106,7 @@ fun authSettings(
         }
         AuthMode.AUTH0 -> {
             check(tenantEnabled) { "opendc.auth.mode=auth0 needs quarkus.oidc.tenant-enabled=true" }
+
             val server =
                 config.getOptionalValue("quarkus.oidc.auth-server-url", String::class.java).orElseThrow {
                     IllegalStateException("opendc.auth.mode=auth0 needs quarkus.oidc.auth-server-url")
@@ -112,6 +114,7 @@ fun authSettings(
             val audience =
                 config.getOptionalValues("quarkus.oidc.token.audience", String::class.java).orElse(emptyList()).firstOrNull()
                     ?: throw IllegalStateException("opendc.auth.mode=auth0 needs quarkus.oidc.token.audience")
+
             AuthSettings.Auth0(
                 domain = URI.create(server).host,
                 clientId = clientId.orElseThrow { IllegalStateException("opendc.auth.mode=auth0 needs opendc.auth.auth0.client-id") },
@@ -121,7 +124,7 @@ fun authSettings(
     }
 }
 
-/** Who the implicit account of anonymous mode is to the identity provider, which it never meets. */
+/** The subject of anonymous mode's implicit account, which never signs in through an identity provider. */
 const val IMPLICIT_SUBJECT = "anonymous"
 
 const val IMPLICIT_HANDLE = "local"
@@ -145,8 +148,8 @@ class ImplicitAccount {
 }
 
 /**
- * Settles how this deployment signs callers in at boot, so a misconfigured one fails to start. Anonymous
- * mode is warned about, since anyone who can reach the port is the administrator.
+ * Decides at boot how this deployment signs callers in, so a misconfigured one fails to start.
+ * Anonymous mode logs a warning, since anyone who can reach the port is the administrator.
  */
 @ApplicationScoped
 class AuthSetup(private val config: AuthConfig) {
@@ -160,6 +163,7 @@ class AuthSetup(private val config: AuthConfig) {
         implicit: ImplicitAccount,
     ) {
         if (settings is AuthSettings.Anonymous) {
+            // Reading the id seeds the account before the first request arrives.
             implicit.id
             if (LaunchMode.current() == LaunchMode.NORMAL) {
                 LOG.warn("opendc.auth.mode=anonymous: every request acts as one implicit administrator with no budget")

@@ -73,6 +73,7 @@ fun checkSource(
     if (shape is SourceCheck.Refused || allowPrivateHosts) {
         return shape
     }
+
     val private = addresses.firstOrNull(::isPrivate)
     return if (private == null) SourceCheck.Allowed else SourceCheck.Refused("${uri.host} is not a public address")
 }
@@ -139,15 +140,17 @@ class RemoteFetch(
                 throw FetchFailure(check.reason)
             }
             remaining()
+
             val connection = current.toURL().openConnection() as HttpURLConnection
             try {
                 connection.instanceFollowRedirects = false
                 connection.connectTimeout = CONNECT_TIMEOUT.toMillis().toInt()
                 // Bounds each blocking read, so a quiet host cannot hold a worker past the deadline.
                 connection.readTimeout = idleTimeout.toMillis().toInt()
+
                 when (val status = connection.responseCode) {
                     in REDIRECTS -> {
-                        val location = connection.getHeaderField("Location") ?: throw FetchFailure("$current redirected nowhere")
+                        val location = connection.getHeaderField("Location") ?: throw FetchFailure("${current.host} redirected nowhere")
                         current = current.resolve(location)
                     }
                     HTTP_OK -> {
@@ -164,7 +167,7 @@ class RemoteFetch(
                 connection.disconnect()
             }
         }
-        throw FetchFailure("$uri redirected more than $MAX_REDIRECTS times")
+        throw FetchFailure("${uri.host} redirected more than $MAX_REDIRECTS times")
     }
 
     private fun resolve(uri: URI): List<InetAddress> =

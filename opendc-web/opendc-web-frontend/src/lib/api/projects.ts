@@ -1,3 +1,4 @@
+import { meKeys } from "@/lib/api/account"
 import { apiRequest } from "@/lib/api/client"
 import type { Id, Project } from "@/lib/api/types"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -23,7 +24,11 @@ export function useCreateProject() {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (name: string) => apiRequest<Project>("api/v1/projects", { method: "POST", body: { name } }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
+        // The profile carries the project count.
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: meKeys.profile })
+            return queryClient.invalidateQueries({ queryKey: projectKeys.all })
+        },
     })
 }
 
@@ -48,6 +53,7 @@ export function useDeleteProject() {
         onSuccess: (_result, projectId) => {
             queryClient.removeQueries({ queryKey: projectKeys.detail(projectId) })
             queryClient.invalidateQueries({ queryKey: projectKeys.all, exact: true })
+            queryClient.invalidateQueries({ queryKey: meKeys.profile })
         },
     })
 }

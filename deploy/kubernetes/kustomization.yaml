@@ -4,8 +4,8 @@
 #   edit deploy/kubernetes/server.env and ingress.yaml for your cluster
 #   kubectl apply -k deploy/kubernetes
 #
-# Postgres and the S3 bucket are expected to exist already, as managed services usually do; Redis,
-# which only ever holds live progress, runs here without persistence. See deploy/README.md.
+# Postgres and the S3 bucket must exist already, as managed services usually do. Redis holds only
+# live progress, so it runs here without persistence. See deploy/README.md.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -29,8 +29,8 @@ secretGenerator:
     envs:
       - secrets.env
 
-# The server and the launcher it starts have to be the same version: the manifest a Job is handed is
-# their contract. Pin both here together, and OPENDC_DISPATCHER_KUBERNETES_IMAGE in server.env.
+# The launcher a Job runs must be the server's version, because the manifest is their contract.
+# Pin this tag and OPENDC_DISPATCHER_KUBERNETES_IMAGE in server.env to the same version.
 images:
   - name: ghcr.io/atlarge-research/opendc-server
     newTag: latest

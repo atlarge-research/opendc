@@ -56,7 +56,7 @@ private const val CONTAINER = "launcher"
 /** How long a stopped launcher gets to exit by itself. */
 private const val GRACE_SECONDS = 10L
 
-/** What the image's start script reads its JVM options from. */
+/** The variable the image's start script reads JVM options from. */
 private const val LAUNCHER_OPTS = "OPENDC_LAUNCHER_OPTS"
 
 /** The execution [this] belongs to. Only objects selected by [MANAGED_BY] are ever asked. */
@@ -82,6 +82,7 @@ fun executionJob(
         )
     val grant = request.grant
     val scratch = Quantity("${config.scratchMb}Mi")
+
     return JobBuilder()
         .withNewMetadata()
         .withName(jobName(request.executionId))

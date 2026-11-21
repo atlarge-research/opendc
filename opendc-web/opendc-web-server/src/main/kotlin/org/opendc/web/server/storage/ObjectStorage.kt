@@ -113,6 +113,7 @@ class ObjectStorage(private val config: ObjectStoreConfig) {
         val region = Region.of(s3.region())
         val endpoint = s3.endpoint().map(URI::create)
         val publicEndpoint = s3.publicEndpoint().map(URI::create).or { endpoint }
+
         return S3ObjectStore(
             client = buildClient(s3, credentials, region, endpoint),
             launcherPresigner = buildPresigner(s3, credentials, region, endpoint),
@@ -138,6 +139,7 @@ class ObjectStorage(private val config: ObjectStoreConfig) {
                 // Several S3-compatible providers reject the flexible-checksum headers the SDK adds by default.
                 .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
                 .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
+
         endpoint.ifPresent { builder.endpointOverride(it) }
         return builder.build()
     }
@@ -154,6 +156,7 @@ class ObjectStorage(private val config: ObjectStoreConfig) {
                 .region(region)
                 .credentialsProvider(credentials)
                 .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(s3.pathStyle()).build())
+
         endpoint.ifPresent { builder.endpointOverride(it) }
         return builder.build()
     }

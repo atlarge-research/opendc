@@ -18,7 +18,7 @@ import {
     scenarioCoordinates,
 } from "@/lib/experiment/spec"
 
-// Every pair holds apart, colour-blind readers included, on the #ffffff and #242424 surfaces.
+// Colours that stay apart from each other, colour-blind readers included, on the #ffffff and #242424 surfaces.
 const SERIES_COLORS: Record<ColorScheme, string[]> = {
     light: ["#2a78d6", "#eb6834", "#1baf7a"],
     dark: ["#3987e5", "#d95926", "#199e70"],
@@ -37,7 +37,7 @@ export function magnitudeColor(scheme: ColorScheme): string {
     return seriesColor(0, scheme)
 }
 
-/** A scenario on the time chart, and the lane, so the colour, it keeps for as long as it stays there. */
+/** A scenario on the time chart, with the lane (and so the colour) it keeps while it stays there. */
 export interface ShownRun {
     scenarioIndex: number
     lane: number
@@ -48,6 +48,7 @@ export interface ShownRun {
 function laneFor(shown: ShownRun[], scenarioIndex: number): number {
     const taken = new Set(shown.map((run) => run.lane))
     if (scenarioIndex < MAX_OVERLAID_RUNS && !taken.has(scenarioIndex)) return scenarioIndex
+
     let lane = 0
     while (taken.has(lane)) lane += 1
     return lane
@@ -69,6 +70,7 @@ export function toggleRun(shown: ShownRun[], scenarioIndex: number): ShownRun[] 
         const kept = shown.filter((run) => run.scenarioIndex !== scenarioIndex)
         return kept.length > 0 ? kept : shown
     }
+
     const room = shown.length < MAX_OVERLAID_RUNS ? shown : shown.slice(1)
     return [...room, { scenarioIndex, lane: laneFor(room, scenarioIndex) }]
 }
@@ -163,7 +165,7 @@ export function formatTick(value: number, scale: MetricScale): string {
     return new Intl.NumberFormat("en-GB", { maximumFractionDigits: scale.decimals }).format(value)
 }
 
-// A glyph at the axis's 12px, and the gap a tick keeps from the axis line.
+// The width of one glyph at the axis's 12px font, and the gap between a tick label and the axis line.
 const TICK_CHAR_PX = 7
 const TICK_GAP_PX = 16
 
@@ -217,10 +219,12 @@ export interface TimeAxis {
 export function timeAxis(spanMs: number): TimeAxis {
     const widest = TICK_STEPS[TICK_STEPS.length - 1] ?? DAY_MS
     const step = TICK_STEPS.find((candidate) => spanMs / candidate <= TARGET_TICKS) ?? widest
+
     const ticks: number[] = []
     for (let at = 0; at <= spanMs; at += step) {
         ticks.push(at)
     }
+
     return { ticks, format: labelEvery(step) }
 }
 
@@ -271,7 +275,7 @@ export function formatInterval(milliseconds: number): string {
 
 export function resultsCsv(results: ExperimentResults): string {
     const metrics = reportedMetrics(results)
-    const header = ["scenario", "simulated_ms", ...metrics.map((metric) => metric.column)]
+    const header = ["scenario", "simulated_ms", ...metrics.map((metric) => metric.id)]
     const lines = [header.join(",")]
 
     for (const scenario of results.scenarios) {

@@ -2,19 +2,24 @@
 
 import { formatAmount, formatBillingDate } from "@/components/user/accountFormat"
 import { TableGhost } from "@/components/util/Ghost"
+import { QueryState } from "@/components/util/QueryState"
 import { notifyComingSoon } from "@/components/util/feedback"
+import { useBilling } from "@/lib/api/account"
 import type { Billing, Invoice, PlanTier } from "@/lib/api/types"
 import { Badge, Button, Group, Modal, Paper, Stack, Table, Text } from "@mantine/core"
 
 export function BillingModal({
     plan,
-    billing,
     opened,
     onClose,
-}: Readonly<{ plan: PlanTier; billing: Billing | undefined; opened: boolean; onClose: () => void }>) {
+}: Readonly<{ plan: PlanTier; opened: boolean; onClose: () => void }>) {
+    const billing = useBilling(opened)
+
     return (
         <Modal opened={opened} onClose={onClose} title="Billing details" size="md" centered>
-            {billing === undefined ? <TableGhost columns={3} /> : <BillingDetails plan={plan} billing={billing} />}
+            <QueryState query={billing} ghost={<TableGhost columns={3} />}>
+                {(loaded) => <BillingDetails plan={plan} billing={loaded} />}
+            </QueryState>
         </Modal>
     )
 }
@@ -61,6 +66,7 @@ function InvoiceTable({ invoices }: Readonly<{ invoices: Invoice[] }>) {
             </Text>
         )
     }
+
     return (
         <Stack gap="xs">
             <Text size="xs" fw={700} tt="uppercase" c="dimmed">

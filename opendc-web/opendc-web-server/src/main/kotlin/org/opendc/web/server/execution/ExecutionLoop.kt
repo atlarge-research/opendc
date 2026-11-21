@@ -105,9 +105,11 @@ class ExecutionLoop(
                 return
             }
         }
+
         if (Instant.now() < pausedUntil.get()) {
             return
         }
+
         while (true) {
             val claim =
                 try {
@@ -116,8 +118,10 @@ class ExecutionLoop(
                     LOG.error("Could not shape queued work", e)
                     return
                 }
+
             val launch = handOver(claim)
             metrics.launched(launch)
+
             when (launch) {
                 Launch.Accepted ->
                     if (QuarkusTransaction.requiringNew().call<Boolean> { abandoned(claim.executionId) }) {
@@ -140,9 +144,8 @@ class ExecutionLoop(
      */
     fun reconcile() {
         val ids = QuarkusTransaction.requiringNew().call<List<UUID>> { Execution.findOnPlatform().map { it.publicId } }
-        if (ids.isEmpty()) {
-            return
-        }
+
+        // Asked even with nothing live: reconciling is also when a dispatcher sweeps what it left behind.
         val verdicts = dispatcher.reconcile(ids)
         for (id in ids) {
             when (val verdict = verdicts[id] ?: PlatformVerdict.Unknown) {
@@ -179,6 +182,7 @@ class ExecutionLoop(
     private fun claim(): Claim? {
         val execution = admissible() ?: return null
         val token = execution.submit(Instant.now())
+
         return Claim(
             executionId = execution.publicId,
             experimentId = execution.experiment.publicId,
@@ -189,19 +193,21 @@ class ExecutionLoop(
 
     /** An execution the platform would take right now, written down but not yet handed over. */
     private fun admissible(): Execution? {
-        val waiting = Execution.findWaiting().firstOrNull()
+        val waiting = Execution.oldestWaiting()
         if (waiting != null) {
             if (!dispatcher.admits(waiting.parallelism, waiting.memoryRequestMb.toDouble())) {
                 return null
             }
             return Execution.lockByPublicId(waiting.publicId)?.takeIf { it.state == ExecutionState.QUEUED }
         }
-        val experiment = RunUnit.findQueued().firstOrNull()?.experiment ?: return null
+
+        val experiment = RunUnit.oldestQueued()?.experiment ?: return null
         val units = RunUnit.lockQueued(experiment.id)
         val bag = planner.plan(experiment, units, dispatcher.slot()).firstOrNull() ?: return null
         if (!dispatcher.admits(bag.grant.parallelism, bag.grant.memoryRequestMb.toDouble())) {
             return null
         }
+
         return planner.queue(experiment, bag, units, attempt = 1, dispatcher = dispatcher.name)
     }
 
@@ -214,6 +220,7 @@ class ExecutionLoop(
             val key = manifestKey(claim.experimentId, claim.executionId)
             val manifest = SdkJson.json.encodeToString(LaunchManifest.serializer(), claim.manifest).encodeToByteArray()
             store.put(key, manifest.inputStream())
+
             dispatcher.launch(LaunchRequest(claim.executionId, store.readUrl(key, config.urlLifetime()), claim.grant))
         } catch (e: Exception) {
             Launch.Unavailable(e.message ?: e.javaClass.name)

@@ -3,17 +3,17 @@ import { z } from "zod"
 
 const quantity = z.union([z.number(), z.string()])
 
+const traceWorkloadFields = {
+    source: resourceReferenceSchema,
+    sampleFraction: z.number().optional(),
+    submissionTime: z.string().nullish(),
+    scalingPolicy: z.string().optional(),
+    deferAll: z.boolean().optional(),
+}
+
 export const workloadSpecSchema = z.discriminatedUnion("type", [
-    z
-        .object({
-            type: z.literal("trace"),
-            source: resourceReferenceSchema,
-            sampleFraction: z.number().optional(),
-            submissionTime: z.string().nullish(),
-            scalingPolicy: z.string().optional(),
-            deferAll: z.boolean().optional(),
-        })
-        .passthrough(),
+    z.object({ type: z.literal("trace"), ...traceWorkloadFields }).passthrough(),
+    z.object({ type: z.literal("efficient-trace"), ...traceWorkloadFields }).passthrough(),
     z
         .object({
             type: z.literal("inline"),
@@ -30,15 +30,7 @@ export const allocationPolicySpecSchema = z.discriminatedUnion("type", [
             type: z.literal("filter"),
             filters: z.array(z.unknown()).optional(),
             weighers: z.array(z.unknown()).optional(),
-            subsetSize: z.number().optional(),
-        })
-        .passthrough(),
-    z
-        .object({
-            type: z.literal("timeshift"),
-            filters: z.array(z.unknown()).optional(),
-            weighers: z.array(z.unknown()).optional(),
-            windowSize: z.number().optional(),
+            timeshift: z.unknown().optional(),
         })
         .passthrough(),
 ])
@@ -47,7 +39,7 @@ export const failureModelSpecSchema = z.discriminatedUnion("type", [
     z.object({ type: z.literal("none") }).passthrough(),
     z
         .object({
-            type: z.literal("traceBased"),
+            type: z.literal("trace"),
             source: resourceReferenceSchema,
             startPoint: z.number().optional(),
             repeat: z.boolean().optional(),
@@ -103,7 +95,7 @@ export type CheckpointSpec = z.infer<typeof checkpointSpecSchema>
 export type ExportSpec = z.infer<typeof exportSpecSchema>
 export type ExperimentSpec = z.infer<typeof experimentSpecSchema>
 
-// The sdk-model's defaults, shown for omitted fields. Not ISO-8601: the editor writes these back.
+// The sdk-model's defaults, shown for fields a document omits.
 export const DEFAULT_CHECKPOINT_INTERVAL = "1 h"
 export const DEFAULT_CHECKPOINT_DURATION = "5 min"
 export const DEFAULT_INTERVAL_SCALING = 1

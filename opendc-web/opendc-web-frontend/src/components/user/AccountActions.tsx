@@ -4,7 +4,7 @@ import { AccessTokensModal } from "@/components/user/AccessTokensModal"
 import { BillingModal } from "@/components/user/BillingModal"
 import { DeactivateAccountModal } from "@/components/user/DeactivateAccountModal"
 import { ProfileModal } from "@/components/user/ProfileModal"
-import { type AuthSession, useBilling } from "@/lib/auth/auth"
+import type { AuthSession } from "@/lib/auth/auth"
 import { useSessionControls } from "@/lib/auth/session"
 import { Divider, NavLink } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
@@ -26,7 +26,6 @@ export function AccountActions({ session, closeDrawer }: Readonly<{ session: Aut
     const [deactivateOpened, deactivation] = useDisclosure(false)
     const [profileOpened, profile] = useDisclosure(false)
     const [tokensOpened, tokens] = useDisclosure(false)
-    const billingQuery = useBilling(billingOpened)
 
     const opening = (open: () => void) => () => {
         closeDrawer()
@@ -97,12 +96,7 @@ export function AccountActions({ session, closeDrawer }: Readonly<{ session: Aut
                         onDeactivated={controls.signOut}
                     />
                     <AccessTokensModal opened={tokensOpened} onClose={tokens.close} />
-                    <BillingModal
-                        plan={session.account.plan}
-                        billing={billingQuery.data}
-                        opened={billingOpened}
-                        onClose={billing.close}
-                    />
+                    <BillingModal plan={session.account.plan} opened={billingOpened} onClose={billing.close} />
                 </>
             )}
             <ProfileModal session={session} opened={profileOpened} onClose={profile.close} />

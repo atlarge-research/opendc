@@ -1,10 +1,12 @@
 "use client"
 
-import { useCreateProjectPrompt } from "@/components/projects/useCreateProjectPrompt"
+import { openNamePrompt } from "@/components/util/NamePrompt"
+import { notifyProblem } from "@/components/util/feedback"
 import { useCreateProject } from "@/lib/api/projects"
 import type { Project } from "@/lib/api/types"
 import { Card, Center, SimpleGrid, Stack, Text, UnstyledButton } from "@mantine/core"
 import { IconPlus } from "@tabler/icons-react"
+import { useRouter } from "next/navigation"
 import { ProjectCard } from "./ProjectCard"
 
 export function ProjectGrid({ projects, emptyMessage }: { projects: Project[]; emptyMessage: string }) {
@@ -27,7 +29,20 @@ export function ProjectGrid({ projects, emptyMessage }: { projects: Project[]; e
 
 function CreateProjectCard() {
     const create = useCreateProject()
-    const promptCreate = useCreateProjectPrompt(create)
+    const router = useRouter()
+
+    const promptCreate = () =>
+        openNamePrompt({
+            title: "Create a project",
+            label: "Project name",
+            confirmLabel: "Create",
+            onSubmit: (name) =>
+                create.mutate(name, {
+                    onSuccess: (project) => router.push(`/project?id=${project.id}`),
+                    onError: notifyProblem,
+                }),
+        })
+
     return (
         <UnstyledButton onClick={promptCreate}>
             <Card withBorder radius="md" padding="md" h="100%" style={{ borderStyle: "dashed" }}>

@@ -47,7 +47,7 @@ object Roles {
     const val EXECUTION = "execution"
 }
 
-/** The account a security identity acts as, by key: entities do not travel between transactions. */
+/** The id of the account a security identity acts as. Not the entity: entities do not travel between transactions. */
 const val ACCOUNT_ATTRIBUTE = "opendc.account"
 
 /** The execution a launcher's identity reports on. */

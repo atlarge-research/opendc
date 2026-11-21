@@ -6,7 +6,7 @@ import { DEFAULT_EXPORT_INTERVAL, type ExportSpec } from "@/lib/experiment/spec"
 import { amountIn, parseQuantity } from "@/lib/units"
 import { TagsInput } from "@mantine/core"
 
-// A value stored in another unit is converted for display rather than refused.
+// Intervals are shown and edited in minutes, whatever unit they are stored in.
 const UNIT = "min"
 
 // Wide enough for the unit to sit clear of the last entry.

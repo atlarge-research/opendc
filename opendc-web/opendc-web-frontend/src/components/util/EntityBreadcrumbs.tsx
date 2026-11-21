@@ -25,7 +25,7 @@ export function EntityBreadcrumbs({ crumbs, trailing }: { crumbs: Crumb[]; trail
         <Group gap={6} wrap="nowrap">
             <Breadcrumbs separator="/">
                 {crumbs.map((crumb) => (
-                    <Crumb key={`${crumb.kind}-${crumb.label}`} crumb={crumb} />
+                    <BreadcrumbItem key={`${crumb.kind}-${crumb.label}`} crumb={crumb} />
                 ))}
             </Breadcrumbs>
             {trailing}
@@ -33,7 +33,7 @@ export function EntityBreadcrumbs({ crumbs, trailing }: { crumbs: Crumb[]; trail
     )
 }
 
-function Crumb({ crumb }: { crumb: Crumb }) {
+function BreadcrumbItem({ crumb }: { crumb: Crumb }) {
     const EntityIcon = ENTITY_ICONS[crumb.kind]
     const icon = <EntityIcon size={14} style={{ flexShrink: 0 }} />
 

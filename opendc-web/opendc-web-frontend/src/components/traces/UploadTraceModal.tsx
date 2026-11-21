@@ -3,6 +3,8 @@
 import { formatBytes } from "@/components/format"
 import { TRACE_NAME_HELP, traceNameProblem } from "@/components/traces/traceName"
 import { FieldLabel } from "@/components/util/FieldLabel"
+import { LineGhost } from "@/components/util/Ghost"
+import { QueryState } from "@/components/util/QueryState"
 import { notifyProblem } from "@/components/util/feedback"
 import { useTraceKinds } from "@/lib/api/traces"
 import type { TraceKind } from "@/lib/api/types"
@@ -10,7 +12,7 @@ import { type UploadProgress, useUploadTrace } from "@/lib/api/uploads"
 import { Button, FileInput, Group, Progress, Select, Stack, Text, TextInput } from "@mantine/core"
 import { modals } from "@mantine/modals"
 import { IconFileCheck, IconUpload } from "@tabler/icons-react"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 const MODAL_ID = "upload-trace"
 
@@ -59,6 +61,9 @@ function UploadTraceForm() {
     const [progress, setProgress] = useState<UploadProgress>({ sent: 0, total: 0 })
     const abort = useRef<AbortController | null>(null)
 
+    // However the modal closes, a running upload stops and its half-made trace is taken back out.
+    useEffect(() => () => abort.current?.abort(), [])
+
     const tables = kinds.data?.find((entry) => entry.kind === kind)?.tables ?? []
     const nameProblem = traceNameProblem(name)
     const complete =
@@ -79,25 +84,23 @@ function UploadTraceForm() {
         )
     }
 
-    // Aborting fails the upload, which discards the half-made trace; closing alone would leave it running.
-    const cancel = () => {
-        abort.current?.abort()
-        modals.close(MODAL_ID)
-    }
-
     return (
         <Stack>
-            <Select
-                label="Kind"
-                data={(kinds.data ?? []).map((entry) => entry.kind)}
-                value={kind}
-                allowDeselect={false}
-                onChange={(value) => {
-                    if (value === null) return
-                    setKind(value as TraceKind)
-                    setFiles({})
-                }}
-            />
+            <QueryState query={kinds} ghost={<LineGhost width="100%" />}>
+                {(loaded) => (
+                    <Select
+                        label="Kind"
+                        data={loaded.map((entry) => entry.kind)}
+                        value={kind}
+                        allowDeselect={false}
+                        onChange={(value) => {
+                            if (value === null) return
+                            setKind(value as TraceKind)
+                            setFiles({})
+                        }}
+                    />
+                )}
+            </QueryState>
             <TextInput
                 label={<FieldLabel label="Name" help={TRACE_NAME_HELP} />}
                 value={name}
@@ -133,7 +136,7 @@ function UploadTraceForm() {
             ))}
             {upload.isPending && progress.total > 0 && <UploadProgressBar progress={progress} />}
             <Group justify="flex-end">
-                <Button variant="default" onClick={cancel}>
+                <Button variant="default" onClick={() => modals.close(MODAL_ID)}>
                     Cancel
                 </Button>
                 <Button onClick={submit} disabled={!complete} loading={upload.isPending}>

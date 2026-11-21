@@ -2,6 +2,8 @@
 
 import { TRACE_NAME_HELP, traceNameProblem } from "@/components/traces/traceName"
 import { FieldLabel } from "@/components/util/FieldLabel"
+import { LineGhost } from "@/components/util/Ghost"
+import { QueryState } from "@/components/util/QueryState"
 import { notifyProblem } from "@/components/util/feedback"
 import { useStartImport, useTraceKinds } from "@/lib/api/traces"
 import type { TraceKind } from "@/lib/api/types"
@@ -51,17 +53,21 @@ function ImportTraceForm() {
                 The server fetches each file itself and adds the trace to your library once every table has arrived and
                 checks out. You can close this and keep working meanwhile.
             </Text>
-            <Select
-                label="Kind"
-                data={(kinds.data ?? []).map((entry) => entry.kind)}
-                value={kind}
-                allowDeselect={false}
-                onChange={(value) => {
-                    if (value === null) return
-                    setKind(value as TraceKind)
-                    setSources({})
-                }}
-            />
+            <QueryState query={kinds} ghost={<LineGhost width="100%" />}>
+                {(loaded) => (
+                    <Select
+                        label="Kind"
+                        data={loaded.map((entry) => entry.kind)}
+                        value={kind}
+                        allowDeselect={false}
+                        onChange={(value) => {
+                            if (value === null) return
+                            setKind(value as TraceKind)
+                            setSources({})
+                        }}
+                    />
+                )}
+            </QueryState>
             <TextInput
                 label={<FieldLabel label="Name" help={TRACE_NAME_HELP} />}
                 value={name}

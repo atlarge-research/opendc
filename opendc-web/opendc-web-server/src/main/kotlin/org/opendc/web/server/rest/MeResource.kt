@@ -48,7 +48,7 @@ import org.opendc.web.server.model.UserAccount
 import org.opendc.web.server.traces.TraceDisposal
 import java.time.Instant
 
-/** The caller's own account: the only endpoints an account still choosing its handle may use. */
+/** The caller's own account. All but billing are open to an account still choosing its handle. */
 @Path("me")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -111,6 +111,7 @@ private fun budgetsOf(
     if (windows.isEmpty()) {
         return emptyList()
     }
+
     val reserved = RunUnit.reservedBy(user.id)
     return windows.map { window ->
         BudgetWindowWire(

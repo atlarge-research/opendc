@@ -115,16 +115,21 @@ class S3ObjectStore(
             false
         }
 
-    // Paged: a bucket answers a thousand keys at a time, which a large experiment easily passes.
-    override fun list(prefix: String): List<String> =
-        client
-            .listObjectsV2Paginator { it.bucket(bucket).prefix(prefix) }
+    // Paged: a bucket answers a thousand keys at a time, which a large experiment easily passes. S3
+    // matches a prefix as plain text, so the filter keeps `seed=1` from also listing `seed=10`.
+    override fun list(prefix: String): List<String> {
+        val directory = prefix.removeSuffix("/")
+        return client
+            .listObjectsV2Paginator { it.bucket(bucket).prefix(directory) }
             .contents()
             .map { it.key() }
+            .filter { it == directory || it.startsWith("$directory/") }
             .sorted()
+    }
 
     override fun delete(key: String) {
         client.deleteObject { it.bucket(bucket).key(key) }
+
         // Parts of an unfinished upload are stored and charged for without being an object.
         for (upload in uploadsOf(key)) {
             client.abortMultipartUpload { it.bucket(bucket).key(key).uploadId(upload.uploadId()) }
@@ -202,7 +207,7 @@ class S3ObjectStore(
             .toString()
 
     override fun deletePrefix(prefix: String) {
-        for (batch in list("$prefix/").chunked(DELETE_BATCH)) {
+        for (batch in list(prefix).chunked(DELETE_BATCH)) {
             client.deleteObjects { request ->
                 request.bucket(bucket).delete(
                     Delete
@@ -223,6 +228,7 @@ class S3ObjectStore(
             client.abortMultipartUpload { it.bucket(bucket).key(key).uploadId(uploadId) }
             return false
         }
+
         client.completeMultipartUpload { request ->
             request
                 .bucket(bucket)
@@ -253,6 +259,7 @@ class S3ObjectStore(
         if (parts.isEmpty()) return false
         val ordered = parts.sortedBy { it.partNumber() }
         if (ordered.map { it.partNumber() } != List(ordered.size) { it + 1 }) return false
+
         val full = ordered.first().size()
         return ordered.dropLast(1).all { it.size() == full } && ordered.last().size() <= full
     }

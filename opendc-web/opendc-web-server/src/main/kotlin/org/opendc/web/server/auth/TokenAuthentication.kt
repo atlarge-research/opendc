@@ -49,7 +49,7 @@ const val BEARER_SCHEME = "Bearer"
 
 private const val BEARER = "$BEARER_SCHEME "
 
-/** Every token this server mints starts so, which is what tells one apart from an Auth0 JWT. */
+/** The prefix of every token this server mints, which tells one apart from an Auth0 JWT. */
 private const val OPENDC_TOKEN = "odc_"
 
 /** Ahead of OIDC (1001), so a token of ours is never handed to the JWT verifier. */
@@ -73,6 +73,7 @@ class OpaqueTokenMechanism : HttpAuthenticationMechanism {
         if (!header.startsWith(BEARER) || !secret.startsWith(OPENDC_TOKEN)) {
             return Uni.createFrom().nullItem()
         }
+
         return identities.authenticate(OpaqueTokenRequest(secret))
     }
 
@@ -89,33 +90,45 @@ class OpaqueTokenMechanism : HttpAuthenticationMechanism {
  * outright rather than falling back to anonymous, so a revoked token never acts as anyone.
  */
 @ApplicationScoped
-class OpaqueTokenIdentityProvider : IdentityProvider<OpaqueTokenRequest> {
+class OpaqueTokenIdentityProvider(private val config: AuthConfig) : IdentityProvider<OpaqueTokenRequest> {
     override fun getRequestType(): Class<OpaqueTokenRequest> = OpaqueTokenRequest::class.java
 
     override fun authenticate(
         request: OpaqueTokenRequest,
         context: AuthenticationRequestContext,
-    ): Uni<SecurityIdentity> = context.runBlocking { QuarkusTransaction.requiringNew().call { identityOf(request.secret, Instant.now()) } }
+    ): Uni<SecurityIdentity> =
+        context.runBlocking {
+            QuarkusTransaction.requiringNew().call { identityOf(request.secret, config.mode(), Instant.now()) }
+        }
 }
 
 private fun identityOf(
     secret: String,
+    mode: AuthMode,
     now: Instant,
 ): SecurityIdentity? =
     when {
-        secret.startsWith(PAT_PREFIX) -> personalIdentity(secret, now)
+        secret.startsWith(PAT_PREFIX) -> personalIdentity(secret, mode, now)
         secret.startsWith(EXECUTION_TOKEN_PREFIX) -> executionIdentity(secret)
         else -> null
     }
 
 private fun personalIdentity(
     secret: String,
+    mode: AuthMode,
     now: Instant,
 ): SecurityIdentity? {
     val token = AccessToken.findBySecret(secret) ?: return null
     if (token.user.state != AccountState.ACTIVE) {
         return null
     }
+
+    // The implicit account is an administrator. Its tokens, minted while nobody signed in, must not
+    // outlive a switch to signing people in.
+    if (token.user.subject == IMPLICIT_SUBJECT && mode != AuthMode.ANONYMOUS) {
+        return null
+    }
+
     token.recordUse(now)
     return QuarkusSecurityIdentity.builder().actingAs(token.user).build()
 }

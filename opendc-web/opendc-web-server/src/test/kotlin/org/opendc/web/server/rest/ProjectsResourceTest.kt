@@ -118,6 +118,7 @@ class ProjectsResourceTest {
     @Test
     fun renamingIsAlsoValidated() {
         val id = createProject("To rename ${UUID.randomUUID()}")
+
         ApiTest.requestJson().body("""{"name":""}""").patch("/api/v1/projects/$id").then().statusCode(400)
         ApiTest.requestJson()
             .body("""{"name":"${"x".repeat(256)}"}""")
@@ -147,6 +148,7 @@ class ProjectsResourceTest {
     @Test
     fun theSearchMatchesPartOfTheNameIgnoringCase() {
         val id = createProject("Zeppelin ${UUID.randomUUID()}")
+
         assertTrue(namesOf("zeppelin").any { it.startsWith("Zeppelin") })
         assertTrue(idsOf(query = "ZEPPELIN").contains(id))
         assertFalse(idsOf(query = "no such project anywhere").contains(id))
@@ -217,7 +219,9 @@ class ProjectsResourceTest {
     fun deletingAProjectRemovesItFromTheListing() {
         val id = createProject("Doomed ${UUID.randomUUID()}")
         assertTrue(idsOf("all").contains(id))
+
         ApiTest.requestJson().delete("/api/v1/projects/$id").then().statusCode(204)
+
         assertFalse(idsOf("all").contains(id))
     }
 

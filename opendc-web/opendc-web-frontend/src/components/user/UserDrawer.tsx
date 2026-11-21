@@ -7,6 +7,7 @@ import type { AuthSession } from "@/lib/auth/auth"
 import { Divider, Drawer, NavLink, Stack, useComputedColorScheme, useMantineColorScheme } from "@mantine/core"
 import { IconMoon, IconSun } from "@tabler/icons-react"
 
+/** The account menu. It stays mounted while closed, because the modals its actions open live inside it. */
 export function UserDrawer({
     opened,
     close,
@@ -32,6 +33,7 @@ function ColorSchemeItem() {
     const { setColorScheme } = useMantineColorScheme()
     const computed = useComputedColorScheme("light", { getInitialValueInEffect: true })
     const isDark = computed === "dark"
+
     return (
         <NavLink
             component="button"

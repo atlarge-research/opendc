@@ -52,6 +52,7 @@ class TraceIngest(private val store: ObjectStore) {
     fun record(trace: Trace) {
         for (table in trace.kind.tables) {
             val size = inspect(trace.kind, table, traceKey(trace.publicId, table))
+
             val part =
                 TracePart.find(trace.id, table) ?: TracePart().also {
                     it.trace = trace
@@ -90,6 +91,7 @@ class TraceIngest(private val store: ObjectStore) {
                 listOf(DocumentIssue(table, "none of its columns belong to $table")),
             )
         }
+
         val elsewhere = footer.columns.intersect(siblingColumns(kind, table) - own)
         if (elsewhere.isNotEmpty()) {
             throw invalidDocument(
@@ -97,6 +99,7 @@ class TraceIngest(private val store: ObjectStore) {
                 listOf(DocumentIssue(table, "it carries the ${elsewhere.sorted().joinToString(", ")} column of another table")),
             )
         }
+
         return TableSize(sizeBytes = store.size(key), rowCount = footer.rowCount)
     }
 

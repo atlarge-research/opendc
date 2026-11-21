@@ -107,6 +107,7 @@ class TopologiesResource(
     fun create(request: TopologyCreateRequest): RestResponse<TopologyTemplateWire> {
         val project = projectFor(identity.currentUser(), request.projectId, ProjectPermission.EDIT).project
         val canonical = codec.canonical(decodeValidated(request.topology))
+
         val now = Instant.now()
         project.updatedAt = now
         val template = TopologyTemplate()
@@ -118,6 +119,7 @@ class TopologiesResource(
         template.createdAt = now
         template.updatedAt = now
         template.persist()
+
         return RestResponse.ResponseBuilder
             .create<TopologyTemplateWire>(201)
             .entity(template.toWire())
@@ -139,12 +141,14 @@ class TopologiesResource(
     ): TopologyTemplateWire {
         val template = topologyFor(identity.currentUser(), id, ProjectPermission.EDIT)
         val canonical = codec.canonical(decodeValidated(request.topology))
+
         template.name = validName(request.name, "Topology")
         template.topology = canonical
         template.topologyHash = codec.hash(canonical)
         template.layout = request.layout?.let { codec.json.encodeToString(JsonElement.serializer(), it) }
         template.updatedAt = Instant.now()
         template.project.updatedAt = template.updatedAt
+
         return template.toWire()
     }
 

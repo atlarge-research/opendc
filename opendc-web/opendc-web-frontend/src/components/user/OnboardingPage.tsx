@@ -1,7 +1,7 @@
 "use client"
 
 import { ProfileForm } from "@/components/user/ProfileForm"
-import { suggestHandle } from "@/lib/account/handle"
+import { suggestHandle } from "@/lib/api/account"
 import { useSessionControls } from "@/lib/auth/session"
 import { Center, Paper, Stack, Text, Title } from "@mantine/core"
 

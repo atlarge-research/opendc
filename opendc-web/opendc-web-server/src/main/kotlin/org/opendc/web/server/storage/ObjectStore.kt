@@ -65,7 +65,7 @@ interface ObjectStore : AutoCloseable {
 
     fun exists(key: String): Boolean
 
-    /** Every object under [prefix], in order, leaving out objects still being written. */
+    /** Every object in the directory [prefix] names, in order, leaving out objects still being written. */
     fun list(prefix: String): List<String>
 
     /** Removes an object, along with any upload of it still in flight. Safe to call twice. */

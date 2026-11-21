@@ -99,6 +99,7 @@ private fun membershipAllowing(
 ): ProjectMember {
     val member = ProjectMember.findMembership(project.id, user.id) ?: throw notFound(what)
     if (!member.role.allows(needs)) {
+        // Every member may read, so only a refused edit reaches the first branch.
         throw forbidden(
             when (needs) {
                 ProjectPermission.READ, ProjectPermission.EDIT -> "Viewers cannot change this project"

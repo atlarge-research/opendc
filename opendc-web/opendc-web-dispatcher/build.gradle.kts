@@ -28,7 +28,7 @@ plugins {
 }
 
 dependencies {
-    // The launcher owns the manifest this module writes.
+    // The launcher owns the manifest and outcome types this module's API exposes.
     api(projects.opendcWeb.opendcWebLauncher)
     implementation(libs.kotlinx.serialization.json)
 

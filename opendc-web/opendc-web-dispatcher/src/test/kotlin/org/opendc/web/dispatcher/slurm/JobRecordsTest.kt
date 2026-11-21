@@ -33,7 +33,7 @@ import java.time.Instant
 
 /**
  * A SLURM job leaves only the records its wrapper and this dispatcher wrote, so reading them is the
- * whole of telling a memory kill from a walltime from a job that simply vanished.
+ * whole of telling a memory kill from a walltime from a job that vanished.
  */
 class JobRecordsTest {
     private val start = 1_000_000L

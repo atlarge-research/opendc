@@ -61,6 +61,7 @@ class TraceDisposal(private val store: ObjectStore) {
         if (TraceImport.isRunningFor(existing.id)) {
             throw conflict("$slug is still being imported")
         }
+
         discard(existing)
     }
 
@@ -73,9 +74,11 @@ class TraceDisposal(private val store: ObjectStore) {
         for (part in TracePart.findByTrace(trace.id)) {
             part.delete()
         }
+
         for (table in trace.kind.tables) {
             store.delete(traceKey(trace.publicId, table))
         }
+
         trace.delete()
         Trace.flush()
     }
@@ -85,6 +88,7 @@ class TraceDisposal(private val store: ObjectStore) {
     fun sweepAbandoned() {
         val cutoff = Instant.now().minus(ABANDONED_AFTER)
         val stale = Trace.list("origin = ?1 and updatedAt < ?2", TraceOrigin.UPLOADED, cutoff)
+
         for (trace in stale.filterNot { it.isComplete() || TraceImport.isRunningFor(it.id) }) {
             LOG.info("Removing {}, registered {} ago and never finished", trace.slug, ABANDONED_AFTER)
             discard(trace)

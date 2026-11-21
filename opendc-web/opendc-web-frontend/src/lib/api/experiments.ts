@@ -1,7 +1,6 @@
 import { apiRequest, apiText } from "@/lib/api/client"
 import type {
     Experiment,
-    ExperimentPreview,
     ExperimentStatus,
     ExperimentSummary,
     Id,
@@ -131,13 +130,6 @@ export function useSaveExperimentDraft(experimentId: Id) {
     })
 }
 
-export function usePreviewExperiment() {
-    return useMutation({
-        mutationFn: (spec: ExperimentSpec) =>
-            apiRequest<ExperimentPreview>("api/v1/experiments/preview", { method: "POST", body: { spec } }),
-    })
-}
-
 export function useSubmitExperiment(experimentId: Id) {
     const queryClient = useQueryClient()
     return useMutation({
@@ -161,8 +153,7 @@ export function useRetryScenario(experimentId: Id) {
             apiRequest<ScenarioStatus>(`api/v1/experiments/${experimentId}/scenarios/${scenarioIndex}/retry`, {
                 method: "POST",
             }),
-        // The detail key is a prefix of the status and results keys, so one invalidation reaches
-        // the panel that has to start polling again.
+        // The detail key prefixes the status, results and scenario keys, so one call reaches every panel.
         onSuccess: () => queryClient.invalidateQueries({ queryKey: experimentKeys.detail(experimentId) }),
     })
 }

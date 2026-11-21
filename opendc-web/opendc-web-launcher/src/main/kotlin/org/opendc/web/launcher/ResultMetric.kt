@@ -89,12 +89,14 @@ enum class ResultMetric(
     ),
     HOST_POWER_DRAW(OutputFileSpec.HOST, "power_draw", EntityFold.Each(Reduction.SUM), Reduction.MEAN),
     POWER_SOURCE_POWER_DRAW(OutputFileSpec.POWER_SOURCE, "power_draw", EntityFold.Each(Reduction.SUM), Reduction.MEAN),
-    POWER_SOURCE_ENERGY_USAGE(OutputFileSpec.POWER_SOURCE, "energy_usage", EntityFold.Each(Reduction.SUM), Reduction.SUM),
+
+    // The simulator reports both as running totals since the start, so a bucket holds its last sample.
+    POWER_SOURCE_ENERGY_USAGE(OutputFileSpec.POWER_SOURCE, "energy_usage", EntityFold.Each(Reduction.SUM), Reduction.LAST),
     POWER_SOURCE_CARBON_EMISSION(
         OutputFileSpec.POWER_SOURCE,
         "carbon_emission",
         EntityFold.Each(Reduction.SUM),
-        Reduction.SUM,
+        Reduction.LAST,
     ),
 
     // A share too: a source supplying almost nothing must not weigh as much as the one carrying the site.

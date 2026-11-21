@@ -1,5 +1,6 @@
 "use client"
 
+import { countOf } from "@/components/format"
 import type { Account, Handle } from "@/lib/api/types"
 import type { AuthSession } from "@/lib/auth/auth"
 import { Avatar, Badge, Group, Stack, Text } from "@mantine/core"
@@ -42,7 +43,7 @@ function AccountBadges({ account }: Readonly<{ account: Account }>) {
                 {account.plan}
             </Badge>
             <Badge variant="light" color="gray" size="sm" leftSection={<IconFolder size={12} />}>
-                {account.projectCount} projects
+                {countOf(account.projectCount, "project")}
             </Badge>
             {account.isAdmin && (
                 <Badge variant="light" color="red" size="sm" leftSection={<IconUserKey size={12} />}>

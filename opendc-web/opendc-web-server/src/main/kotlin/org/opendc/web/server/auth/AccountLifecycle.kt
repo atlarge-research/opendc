@@ -44,14 +44,12 @@ fun signedIn(
     subject: String,
     admins: Set<String>,
     now: Instant,
-): UserAccount {
-    val attempt = { QuarkusTransaction.requiringNew().call { known(subject, admins) ?: provisionAccount(subject, admins, now) } }
-    return try {
-        attempt()
+): UserAccount =
+    try {
+        QuarkusTransaction.requiringNew().call { known(subject, admins) ?: provisionAccount(subject, admins, now) }
     } catch (e: RuntimeException) {
         QuarkusTransaction.requiringNew().call { known(subject, admins) } ?: throw e
     }
-}
 
 private fun known(
     subject: String,
@@ -79,6 +77,7 @@ fun provisionAccount(
     account.createdAt = now
     account.persist()
     UserAccount.flush()
+
     openWindows(account, now)
     return account
 }
@@ -95,18 +94,22 @@ fun changeProfile(
 ) {
     val chosen = validHandle(handle)
     val name = validName(displayName, "Display", path = "displayName")
+
     if (chosen != account.handle) {
         val owned = Trace.findOwnedBy(account.id)
         if (account.handleKind == HandleKind.CHOSEN && owned.any { it.isComplete() }) {
             throw conflict("Your handle prefixes traces you own", listOf(DocumentIssue("handle", "is in use by your traces")))
         }
+
         val holder = UserAccount.findByHandle(chosen)
         if (holder != null && holder.id != account.id) {
             throw conflict("That handle is taken", listOf(DocumentIssue("handle", "is taken")))
         }
+
         owned.forEach(discard)
         account.handle = chosen
     }
+
     account.handleKind = HandleKind.CHOSEN
     account.displayName = name
 }
@@ -122,6 +125,7 @@ fun deactivate(
     if (account.subject == IMPLICIT_SUBJECT) {
         throw conflict("The local account of anonymous mode cannot be deactivated")
     }
+
     val memberships = ProjectMember.findByUser(account.id)
     val shared = memberships.filter { ProjectMember.count("project.id = ?1", it.project.id) > 1 }
     val stranded =
@@ -134,6 +138,7 @@ fun deactivate(
             stranded.map { DocumentIssue("projects", it.project.name) },
         )
     }
+
     AccessToken.delete("user.id = ?1", account.id)
     shared.forEach { it.delete() }
     account.deactivate(now)

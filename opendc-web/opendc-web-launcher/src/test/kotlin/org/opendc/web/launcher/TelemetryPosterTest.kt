@@ -67,7 +67,7 @@ class TelemetryPosterTest {
         assertEquals(REPORT.runs, CODEC.decodeFromString(TelemetryReport.serializer(), posted.body).runs)
     }
 
-    // A server that is down, restarting or simply refusing is not an error the launcher can act on:
+    // A server that is down, restarting or refusing is not an error the launcher can act on:
     // its work is unaffected and the next report supersedes the one that was lost.
     @Test
     fun `keeps going when the endpoint refuses a report`() {

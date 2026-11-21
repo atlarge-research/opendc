@@ -123,7 +123,7 @@ internal sealed interface JobEnding {
     ) : JobEnding
 }
 
-/** The records in [files], each a record's name and its `key=value` lines, as one execution's account. */
+/** Reads one execution's records from [files], which maps each record's name to its `key=value` lines. */
 internal fun records(
     files: Map<String, String>,
     lastOutput: Instant,
@@ -133,6 +133,7 @@ internal fun records(
     val stop = fields[Record.STOP]
     val started = fields[Record.STARTED]?.get("at")?.toLongOrNull()
     val exit = fields[Record.EXIT]
+
     return JobRecords(
         stop =
             if (stop == null) {
@@ -167,6 +168,7 @@ internal fun ending(
     val peak = peakOf(exit, records.launcherPeak)
     val code = if (exit is WrapperExit.Recorded) exit.code else NO_EXIT_CODE
     val ended = { reason: ExitReason, message: String -> JobEnding.Ended(ExitOutcome(reason, code, message, span, peak, logTail)) }
+
     val limitReached = limitReached(records.start, end, records.limits)
     val outOfTime =
         if (records.limits.capped) {
@@ -202,6 +204,7 @@ internal fun ending(
 private fun wrapperExit(fields: Map<String, String>): WrapperExit {
     val code = fields["code"]?.toIntOrNull() ?: return WrapperExit.Missing
     val ended = fields["ended"]?.toLongOrNull()?.let(Instant::ofEpochSecond) ?: Instant.now()
+
     return WrapperExit.Recorded(
         code = code,
         endedAt = ended,

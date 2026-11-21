@@ -69,15 +69,15 @@ private const val DEFAULT_NAMESPACE = "default"
 /**
  * Runs each execution as one Job on a Kubernetes cluster.
  *
- * Everything the cluster says arrives through informers, whose handlers only record it and hand the
- * execution to one events thread. That thread works out where the execution stands, fetches its log
- * and calls the listener, so a slow listener never stalls the client and a start is always delivered
- * before an end. A stop this server asks for is written onto the Job before the Job is deleted, so
- * the verdict is read back from the cluster by whichever replica sees the end.
+ * Informer handlers only record what the cluster says and hand the execution to one events thread,
+ * which works out where it stands, fetches its log and calls the listener. A slow listener therefore
+ * never stalls the client, and a start is always delivered before an end. A stop this server asks for
+ * is written onto the Job before the Job is deleted, so whichever replica sees the end reads the same
+ * verdict.
  *
- * The cluster is taken to be the nodes it shows, once it has shown all of them. Executions are shaped
- * to fit the one with the most memory, and a pod larger than every node is refused, at launch or once
- * seen pending, rather than left waiting for a node that will never come.
+ * Once the cluster has listed all its nodes, executions are shaped to fit the node with the most
+ * memory, and a pod larger than every node is refused rather than left waiting for a node that will
+ * never come.
  */
 class KubernetesDispatcher internal constructor(
     private val client: KubernetesClient,
@@ -122,6 +122,7 @@ class KubernetesDispatcher internal constructor(
 
     override fun observe(listener: (PlatformEvent) -> Unit) {
         check(this.listener.compareAndSet(null, listener)) { "a listener is already registered" }
+
         informers +=
             client
                 .batch()
@@ -139,6 +140,7 @@ class KubernetesDispatcher internal constructor(
                 .runnableInformer(RESYNC_PERIOD.toMillis())
                 .apply { addEventHandler(handler(::onPod)) }
         informers += nodeInformer.apply { addEventHandler(handler(::onNode)) }
+
         for (informer in informers) {
             informer.start().exceptionally { failure ->
                 // A cluster that will not list nodes leaves capacity at this dispatcher's own ceiling.
@@ -146,9 +148,8 @@ class KubernetesDispatcher internal constructor(
                 null
             }
         }
-        events.scheduleWithFixedDelay({
-            jobs.keys.toList().forEach(::process)
-        }, SCAN_PERIOD.toMillis(), SCAN_PERIOD.toMillis(), TimeUnit.MILLISECONDS)
+
+        events.scheduleWithFixedDelay(::scan, SCAN_PERIOD.toMillis(), SCAN_PERIOD.toMillis(), TimeUnit.MILLISECONDS)
     }
 
     override fun launch(request: LaunchRequest): Launch {
@@ -158,6 +159,7 @@ class KubernetesDispatcher internal constructor(
         if (fitsNoNode(asked, nodes)) {
             return Launch.Rejected(tooLargeForNodes(asked, nodes))
         }
+
         return try {
             jobs().resource(job).create()
             inFlight += request.executionId
@@ -185,6 +187,7 @@ class KubernetesDispatcher internal constructor(
     override fun reconcile(executionIds: List<UUID>): Map<UUID, PlatformVerdict> {
         val listed = jobs().withLabel(MANAGED_BY_LABEL, MANAGED_BY).list().items.associateBy { it.executionId() }
         val podsOf = client.pods().inNamespace(namespace).withLabel(MANAGED_BY_LABEL, MANAGED_BY).list().items.groupBy { it.executionId() }
+
         return executionIds.associateWith { id ->
             val job = listed[id] ?: return@associateWith PlatformVerdict.Unknown
             val jobPods = podsOf[id].orEmpty()
@@ -225,9 +228,10 @@ class KubernetesDispatcher internal constructor(
     ) {
         val id = job.executionId()
         jobs[id] = SeenJob(job, gone = deleted)
-        if (!deleted && job.status?.completionTime == null) {
-            if (id !in finished) inFlight += id
+        if (!deleted && job.status?.completionTime == null && id !in finished) {
+            inFlight += id
         }
+
         process(id)
         if (deleted) {
             forget(id)
@@ -241,6 +245,9 @@ class KubernetesDispatcher internal constructor(
         val id = pod.executionId()
         val byName = pods.getOrPut(id) { mutableMapOf() }
         if (deleted) byName.remove(pod.metadata.name) else byName[pod.metadata.name] = pod
+        // A Job's pods are deleted after the Job is forgotten, so an empty entry would otherwise stay for good.
+        if (byName.isEmpty()) pods.remove(id)
+
         refreshCapacity()
         process(id)
     }
@@ -253,14 +260,26 @@ class KubernetesDispatcher internal constructor(
         refreshCapacity()
     }
 
-    /** What each node could give one pod; nothing, so nothing is ruled out, until the node list is read in full. */
+    /** What each node could give one pod. Empty, which rules nothing out, until the node list has been read in full. */
     private fun nodeRooms(): List<PodResources> = if (nodeInformer.hasSynced()) allocatableOf(nodeInformer.store.list()) else emptyList()
+
+    /** Looks at every known Job again. A failure is logged, not thrown: a periodic task that throws never runs again. */
+    private fun scan() {
+        for (id in jobs.keys.toList()) {
+            try {
+                process(id)
+            } catch (e: Exception) {
+                LOG.warn("Could not settle execution {}; the next scan tries again", id, e)
+            }
+        }
+    }
 
     /** Works out where [id] stands and tells the listener anything new. Runs on the events thread only. */
     private fun process(id: UUID) {
         val seen = jobs[id] ?: return
         val listener = listener.get() ?: return
         val jobPods = pods[id].orEmpty().values.toList()
+
         when (val state = jobState(seen.job, jobPods, seen.gone)) {
             is JobState.Pending -> {
                 val asked = requestOf(seen.job)
@@ -311,7 +330,7 @@ class KubernetesDispatcher internal constructor(
             false
         }
 
-    /** Writes why the Job is being stopped onto it, then deletes it. A Job that is already gone was never held. */
+    /** Writes why the Job is being stopped onto it, then deletes it. A Job that is already gone is left alone. */
     private fun stop(
         id: UUID,
         reason: ExitReason,

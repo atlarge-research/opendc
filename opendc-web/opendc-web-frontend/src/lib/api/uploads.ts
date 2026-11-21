@@ -1,6 +1,6 @@
 import { ApiError, apiRequest, apiUrl, credentials } from "@/lib/api/client"
 import { traceKeys } from "@/lib/api/traces"
-import type { RegisteredTrace, Trace, TraceKind, UploadPart } from "@/lib/api/types"
+import type { RegisteredTrace, Trace, TraceKind, UploadPart, UploadSlot } from "@/lib/api/types"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 export interface UploadProgress {
@@ -33,60 +33,80 @@ interface Transfer {
     direct: boolean
 }
 
-/**
- * Claims the name, puts each table where its slots point, then completes. Direct slots go straight
- * to object storage, so the API never holds the trace's bytes.
- */
 export function useUploadTrace() {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: async (upload: TraceUpload): Promise<Trace> => {
-            // The sizes decide how each file is cut into parts when the slots are handed out.
-            const files = Object.entries(upload.files).map(([table, file]) => ({ table, sizeBytes: file.size }))
-            const registered = await apiRequest<RegisteredTrace>("api/v1/traces", {
-                method: "POST",
-                body: { kind: upload.kind, name: upload.name, description: upload.description || undefined, files },
-            })
-
-            const transfers = registered.uploads.flatMap((slot): Transfer[] => {
-                const file = upload.files[slot.table]
-                if (file === undefined) throw missingFile(slot.table)
-                return slot.parts.map((part, index) => ({
-                    id: `${slot.table}#${index}`,
-                    part,
-                    file,
-                    table: slot.table,
-                    direct: slot.direct,
-                }))
-            })
-
-            const total = transfers.reduce((bytes, { part }) => bytes + part.length, 0)
-            const sent = new Map<string, number>()
-            const report = (id: string, bytes: number) => {
-                sent.set(id, bytes)
-                upload.onProgress?.({ sent: [...sent.values()].reduce((a, b) => a + b, 0), total })
-            }
-
-            const stop = new AbortController()
-            upload.signal?.addEventListener("abort", () => stop.abort(), { once: true })
-
-            try {
-                await inParallel(transfers, CONCURRENT_PARTS, async (transfer) => {
-                    try {
-                        await putPart(transfer, (bytes) => report(transfer.id, bytes), stop.signal)
-                    } catch (error) {
-                        stop.abort()
-                        throw error
-                    }
-                })
-                return await apiRequest<Trace>(`api/v1/traces/${registered.trace.id}/complete`, { method: "POST" })
-            } catch (error) {
-                await discard(registered.trace.id)
-                throw error
-            }
-        },
+        mutationFn: uploadTrace,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: traceKeys.all }),
     })
+}
+
+/**
+ * Claims the name, puts each table where its slots point, then completes. Direct slots go straight
+ * to object storage, so the API never holds the trace's bytes. A failure, a cancel included, takes
+ * the registration back out.
+ */
+export async function uploadTrace(upload: TraceUpload): Promise<Trace> {
+    // Listening before the first request, so a cancel while the name is being claimed is not missed.
+    const stop = new AbortController()
+    upload.signal?.addEventListener("abort", () => stop.abort(), { once: true })
+
+    const registered = await register(upload)
+
+    try {
+        const transfers = transfersOf(registered.uploads, upload.files)
+        const report = progressReporter(transfers, upload.onProgress)
+
+        await inParallel(transfers, CONCURRENT_PARTS, async (transfer) => {
+            try {
+                await putPart(transfer, (bytes) => report(transfer.id, bytes), stop.signal)
+            } catch (error) {
+                stop.abort()
+                throw error
+            }
+        })
+
+        return await apiRequest<Trace>(`api/v1/traces/${registered.trace.id}/complete`, { method: "POST" })
+    } catch (error) {
+        await discard(registered.trace.id)
+        throw error
+    }
+}
+
+function register(upload: TraceUpload): Promise<RegisteredTrace> {
+    // The sizes decide how each file is cut into parts when the slots are handed out.
+    const files = Object.entries(upload.files).map(([table, file]) => ({ table, sizeBytes: file.size }))
+
+    return apiRequest<RegisteredTrace>("api/v1/traces", {
+        method: "POST",
+        body: { kind: upload.kind, name: upload.name, description: upload.description || undefined, files },
+    })
+}
+
+function transfersOf(slots: UploadSlot[], files: Record<string, File>): Transfer[] {
+    return slots.flatMap((slot) => {
+        const file = files[slot.table]
+        if (file === undefined) throw missingFile(slot.table)
+
+        return slot.parts.map((part, index) => ({
+            id: `${slot.table}#${index}`,
+            part,
+            file,
+            table: slot.table,
+            direct: slot.direct,
+        }))
+    })
+}
+
+/** Returns a function that records one transfer's bytes sent so far and reports the sum across all transfers. */
+function progressReporter(transfers: Transfer[], onProgress: TraceUpload["onProgress"]) {
+    const total = transfers.reduce((bytes, { part }) => bytes + part.length, 0)
+    const sent = new Map<string, number>()
+
+    return (id: string, bytes: number) => {
+        sent.set(id, bytes)
+        onProgress?.({ sent: [...sent.values()].reduce((sum, value) => sum + value, 0), total })
+    }
 }
 
 /** Sends at most [limit] transfers at once, starting the next as soon as one finishes. */

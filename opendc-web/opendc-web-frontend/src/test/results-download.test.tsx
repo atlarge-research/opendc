@@ -136,6 +136,23 @@ describe("downloading an experiment's results", () => {
     })
 })
 
+describe("an experiment with nothing to chart", () => {
+    const empty = { ...RESULTS, scenarios: [] }
+
+    it("promises samples while one can still arrive", async () => {
+        show("running", { ...empty, complete: false })
+
+        expect(await screen.findByText(/the first ones arrive shortly/)).toBeInTheDocument()
+    })
+
+    it("does not ask for patience from an experiment that ended without reporting", async () => {
+        show("failed", empty)
+
+        await screen.findByText(/failed before reporting/)
+        expect(screen.queryByText(/Waiting for the first samples/)).not.toBeInTheDocument()
+    })
+})
+
 describe("saving a chart as an image", () => {
     it("says there is nothing to save before the chart has been drawn", async () => {
         const image = { title: "CPU utilization", caption: "", legend: [], fileName: "chart.png" }

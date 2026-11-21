@@ -1,5 +1,5 @@
-# Exactly what the Kubernetes dispatcher does: create, watch, annotate and delete its Jobs, watch and
-# read the logs of their pods, all in its own namespace.
+# Exactly what the Kubernetes dispatcher needs in its own namespace: create, watch, annotate and
+# delete its Jobs, and watch their pods and read their logs.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:

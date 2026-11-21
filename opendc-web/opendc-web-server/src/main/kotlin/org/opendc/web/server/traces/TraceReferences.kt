@@ -52,6 +52,7 @@ fun resolveTraces(
 ): TraceResolution {
     val library =
         (Trace.findBuiltIns() + Trace.findOwnedBy(user.id) + TraceGrant.findSharedWith(user.id).map { it.trace }).associateBy { it.slug }
+
     val usable = mutableMapOf<String, Trace>()
     val issues = mutableListOf<DocumentIssue>()
     for (use in spec.references()) {
@@ -75,6 +76,7 @@ fun resolveTraces(
             }
         }
     }
+
     return TraceResolution(usable, issues)
 }
 

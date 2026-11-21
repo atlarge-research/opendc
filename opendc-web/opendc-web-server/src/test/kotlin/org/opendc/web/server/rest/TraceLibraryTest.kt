@@ -170,6 +170,14 @@ class TraceLibraryTest {
         given().body(ByteArray(4)).put("/api/v1/traces/$id/tables/fragments").then().statusCode(404)
     }
 
+    // Experiments name a finished trace, and its row counts were read from the bytes it holds.
+    @Test
+    fun `a finished trace cannot be uploaded again`() {
+        val id = completedCarbon(unique("finished"))
+
+        put(id, "carbon", CARBON).then().statusCode(409)
+    }
+
     @Test
     fun `names that would not survive a url or a document are refused`() {
         for (bad in listOf("", "  ", "with space", "Upper/Case", "slash/inside", "-leading")) {
@@ -278,6 +286,7 @@ class TraceLibraryTest {
                 entries[entry.name.substringAfterLast('/')] = zip.readBytes().size
             }
         }
+
         assertEquals(setOf("tasks.parquet", "fragments.parquet"), entries.keys)
         assertEquals(ApiTest.fixtureBytes(TASKS).size, entries.getValue("tasks.parquet"))
     }

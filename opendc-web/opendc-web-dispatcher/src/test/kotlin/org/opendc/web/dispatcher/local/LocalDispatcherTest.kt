@@ -152,13 +152,36 @@ class LocalDispatcherTest {
         )
     }
 
+    /**
+     * The next outcome, once the dispatcher has removed its execution's directory. The removal follows
+     * the listener, and the test directory can only be deleted once nothing else is deleting in it.
+     */
     private fun awaitFinished(): ExitOutcome {
         while (true) {
             when (val event = events.poll(90, TimeUnit.SECONDS) ?: error("nothing finished")) {
                 is PlatformEvent.Started -> continue
-                is PlatformEvent.Finished -> return event.outcome
+                is PlatformEvent.Finished -> {
+                    awaitRemoved(workDir.resolve("executions/${event.executionId}"))
+                    return event.outcome
+                }
             }
         }
+    }
+
+    private fun awaitRemoved(directory: Path) {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
+        while (directory.exists() && System.nanoTime() < deadline) {
+            Thread.sleep(50)
+        }
+    }
+
+    /** Ends a launcher a test leaves running. Windows deletes no file a live process holds open. */
+    private fun cancelAndAwait(
+        dispatcher: LocalDispatcher,
+        request: LaunchRequest,
+    ) {
+        dispatcher.cancel(request.executionId)
+        awaitFinished()
     }
 
     // Two units in one process, one of which cannot find its input. Its failure is its own: the other
@@ -256,7 +279,8 @@ class LocalDispatcherTest {
         assertTrue(!dispatcher.admits(cores = 4, memoryMb = 1.0), "one core is already spoken for")
         assertTrue(!dispatcher.admits(cores = 1, memoryMb = 3400.0), "768 MB is already spoken for")
         assertEquals(1, dispatcher.capacity().allocatedCores)
-        dispatcher.cancel(request.executionId)
+
+        cancelAndAwait(dispatcher, request)
     }
 
     // Otherwise work larger than the machine waits for room that will never appear.
@@ -280,7 +304,8 @@ class LocalDispatcherTest {
         assertEquals(Launch.Accepted, dispatcher.launch(request))
         assertEquals(Launch.Accepted, dispatcher.launch(request))
         assertEquals(1, dispatcher.capacity().allocatedCores)
-        dispatcher.cancel(request.executionId)
+
+        cancelAndAwait(dispatcher, request)
     }
 
     private fun decode(file: Path): UnitOutcome = SdkJson.json.decodeFromString(UnitOutcome.serializer(), file.readText())

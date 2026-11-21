@@ -98,6 +98,7 @@ export function useAdminExecutions(filter: StateFilter, page: number) {
     const params = new URLSearchParams(statesOf(filter).map((state) => ["state", state]))
     params.set("limit", String(ADMIN_PAGE_SIZE))
     params.set("offset", String((page - 1) * ADMIN_PAGE_SIZE))
+
     return useQuery({
         queryKey: adminKeys.executions(filter, page),
         queryFn: () => apiRequest<Page<AdminExecution>>(`api/v1/admin/executions?${params}`),
@@ -146,6 +147,7 @@ export function useAdminAccounts(q: string, page: number) {
         limit: String(ADMIN_PAGE_SIZE),
         offset: String((page - 1) * ADMIN_PAGE_SIZE),
     })
+
     return useQuery({
         queryKey: adminKeys.users(q, page),
         queryFn: () => apiRequest<Page<AdminAccount>>(`api/v1/admin/users?${params}`),

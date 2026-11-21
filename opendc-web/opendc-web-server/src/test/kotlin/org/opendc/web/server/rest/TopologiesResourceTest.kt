@@ -175,6 +175,7 @@ class TopologiesResourceTest {
                 .body("""{"projectId":"$projectId","name":"GHz","topology":${topology("2.4 GHz")}}""")
                 .post("/api/v1/topologies")
         ghz.then().statusCode(201)
+
         assertEquals(mhz.jsonPath().getString("topologyHash"), ghz.jsonPath().getString("topologyHash"))
     }
 

@@ -136,6 +136,7 @@ class AdminResourceTest {
         for (probe in listOf("live", "ready", "started")) {
             given().port(MANAGEMENT_PORT).get("/q/health/$probe").then().statusCode(200)
         }
+
         given()
             .port(MANAGEMENT_PORT)
             .get("/q/metrics")

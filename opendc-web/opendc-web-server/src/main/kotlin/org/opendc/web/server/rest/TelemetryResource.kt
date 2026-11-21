@@ -62,6 +62,7 @@ class TelemetryResource(
         if (execution.state.isTerminal) {
             throw conflict("This execution has already finished")
         }
+
         val experimentId = execution.experiment.publicId
         val carried =
             ExecutionUnit
@@ -69,6 +70,7 @@ class TelemetryResource(
                 .map { it.unit }
                 .filter { it.state == UnitState.CARRIED }
                 .associateBy { it.scenarioIndex to it.seed }
+
         for (run in report.runs) {
             // Work this execution is not carrying, such as work cancelled while it was out, is dropped
             // rather than refused, so the runs it got right are kept.
@@ -76,6 +78,7 @@ class TelemetryResource(
             unit.completedTasks = run.completedTasks.coerceIn(0, unit.totalTasks)
             store.write(RunKey(experimentId, run.scenarioIndex, run.seed), run.series)
         }
+
         return Response.status(204).build()
     }
 }

@@ -2,7 +2,7 @@
 
 import { Card, Container, Group, Paper, SimpleGrid, Skeleton, Stack, Table } from "@mantine/core"
 
-// Loading outlines that mirror the layout they stand in for, so nothing shifts when the data lands.
+// Loading outlines that mirror the layout they replace, so nothing shifts when the data lands.
 
 function keys(count: number, prefix: string): string[] {
     return Array.from({ length: count }, (_, index) => `${prefix}-${index}`)
@@ -28,22 +28,20 @@ export function TableGhost({ columns, rows = 3 }: Readonly<{ columns: number; ro
 
 export function CardGridGhost({ cards = 3 }: Readonly<{ cards?: number }>) {
     return (
-        <>
-            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
-                {keys(cards, "card").map((card) => (
-                    <Card key={card} withBorder radius="md" padding="md" h="100%">
-                        <Stack gap="sm">
-                            <Skeleton height={16} radius="sm" width="55%" />
-                            <Skeleton height={10} radius="sm" width="35%" />
-                            <Group gap="xs" mt="xs">
-                                <Skeleton height={18} radius="xl" width={64} />
-                                <Skeleton height={18} radius="xl" width={48} />
-                            </Group>
-                        </Stack>
-                    </Card>
-                ))}
-            </SimpleGrid>
-        </>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+            {keys(cards, "card").map((card) => (
+                <Card key={card} withBorder radius="md" padding="md" h="100%">
+                    <Stack gap="sm">
+                        <Skeleton height={16} radius="sm" width="55%" />
+                        <Skeleton height={10} radius="sm" width="35%" />
+                        <Group gap="xs" mt="xs">
+                            <Skeleton height={18} radius="xl" width={64} />
+                            <Skeleton height={18} radius="xl" width={48} />
+                        </Group>
+                    </Stack>
+                </Card>
+            ))}
+        </SimpleGrid>
     )
 }
 

@@ -35,6 +35,7 @@ describe("selection", () => {
 
     it("adds and removes clusters when shift clicking, falling back to their data center", () => {
         const two = extendToCluster(selectCluster(cluster(0, 1)), cluster(0, 3))
+
         expect(selectedClusters(two, 0)).toEqual([1, 3])
         expect(selectedClusters(extendToCluster(two, cluster(0, 1)), 0)).toEqual([3])
         expect(extendToCluster(selectCluster(cluster(0, 1)), cluster(0, 1))).toEqual(selectDataCenter(0))
@@ -59,6 +60,7 @@ describe("builder view", () => {
 
     it("shifts surviving clusters down after a deletion instead of pointing at the wrong one", () => {
         const view = viewOf(0, extendToCluster(selectCluster(cluster(0, 1)), cluster(0, 4)))
+
         expect(selectedClusters(afterClusterRemoval(view, 0, [0, 2]).selection, 0)).toEqual([0, 2])
         expect(afterClusterRemoval(view, 1, [0])).toBe(view)
     })
@@ -85,6 +87,7 @@ describe("builder view", () => {
         const topology = {
             datacenters: [{ clusters: [{ hosts: [{ cpu: { coreCount: 1, coreSpeed: 1 }, memory: { size: 1 } }] }] }],
         }
+
         expect(clampToTopology(viewOf(3, selectCluster(cluster(3, 0))), topology)).toEqual(viewOf(0))
         expect(clampToTopology(viewOf(0, selectCluster(cluster(0, 7))), topology).selection).toEqual(
             selectDataCenter(0),
@@ -111,6 +114,7 @@ describe("history", () => {
     it("walks backwards and forwards through recorded edits", () => {
         const edited = record(record(start, "b"), "c")
         const back = undo(edited)
+
         expect(back.present).toBe("b")
         expect(redo(back).present).toBe("c")
         expect(undo(back).present).toBe("a")
@@ -124,6 +128,7 @@ describe("history", () => {
     it("discards the redo branch once a new edit is made after undoing", () => {
         const edited = record(record(start, "b"), "c")
         const branched = record(undo(edited), "d")
+
         expect(canRedo(branched)).toBe(false)
         expect(branched.present).toBe("d")
         expect(undo(branched).present).toBe("b")
@@ -132,6 +137,7 @@ describe("history", () => {
     it("forgets the oldest edits rather than growing without bound", () => {
         let history = start
         for (let step = 0; step < 200; step++) history = record(history, `step-${step}`)
+
         expect(history.past.length).toBeLessThanOrEqual(50)
         expect(history.present).toBe("step-199")
     })

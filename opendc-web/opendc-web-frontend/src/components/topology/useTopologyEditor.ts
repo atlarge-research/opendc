@@ -39,7 +39,7 @@ export interface TopologyEditor {
     saveNow: () => void
 }
 
-/** The editor's state. One that is not [editable], a viewer's, ignores every edit and saves nothing. */
+/** The builder's document state. When it is not [editable], as for a viewer, edits are ignored and nothing is saved. */
 export function useTopologyEditor(template: TopologyTemplate, editable: boolean): TopologyEditor {
     const save = useSaveTopology(template.projectId)
     const [history, setHistory] = useState<History<TopologyPlan>>(() =>

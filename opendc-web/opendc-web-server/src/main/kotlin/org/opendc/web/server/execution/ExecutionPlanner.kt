@@ -131,14 +131,15 @@ class ExecutionPlanner(
             unit.state = UnitState.CARRIED
             // The attempt starts over, so an earlier one's progress no longer counts.
             unit.completedTasks = 0
+
             val row = ExecutionUnit()
             row.execution = execution
             row.unit = unit
             row.estimatedSeconds = planned.cpuSeconds
             row.estimatedPeakMemoryMb = planned.peakMemoryMb
             row.persist()
-            execution.carried += row
         }
+
         return execution
     }
 
@@ -155,18 +156,21 @@ class ExecutionPlanner(
         val experiment = execution.experiment.publicId
         val scenarios = scenariosOf(execution.experiment)
         val staging = Staging(store, lifetime)
+
         val units =
             ExecutionUnit.findByExecution(execution.id).mapNotNull { row ->
                 val unit = row.unit
                 val scenario = scenarios[unit.scenarioIndex to unit.seed] ?: return@mapNotNull null
                 val run = runKey(experiment, unit.scenarioIndex, unit.seed)
                 val files = scenario.exportModel.filesToExport.distinct().map { it.fileName } + MetaFile.entries.map { it.path }
+
                 LaunchUnit(
                     scenario = scenario.mapReferences { staging.stage(it.reference) },
                     outputs = files.map { file -> OutputTarget(file, store.writeUrl("$run/$file", lifetime)) },
                     outcome = store.writeUrl(outcomeKey(experiment, execution.publicId, unit.scenarioIndex, unit.seed), lifetime),
                 )
             }
+
         return LaunchManifest(
             inputs = staging.inputs,
             units = units,
@@ -218,6 +222,7 @@ private class Staging(
             return reference
         }
         val trace = Trace.findBySlug(reference.name) ?: return reference
+
         val directory =
             directories.getOrPut(trace.id) {
                 val path = "$INPUTS/${directories.size}"
@@ -227,6 +232,7 @@ private class Staging(
                 }
                 path
             }
+
         val table = trace.kind.tables.singleOrNull()
         return UriReference(if (table == null) directory else "$directory/$table.parquet")
     }

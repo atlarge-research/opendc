@@ -58,6 +58,7 @@ class ScenarioDetailTest {
     fun submit() {
         loop.drain()
         dispatcher.forget()
+
         val project =
             ApiTest.requestJson().body(
                 """{"name":"Scenarios ${UUID.randomUUID()}"}""",
@@ -71,6 +72,7 @@ class ScenarioDetailTest {
                 .statusCode(201)
                 .extract()
                 .path("id")
+
         ApiTest.requestJson().post("/api/v1/experiments/$experiment/submit").then().statusCode(200)
         loop.drain()
     }
@@ -78,6 +80,7 @@ class ScenarioDetailTest {
     @Test
     fun `shows each attempt at a run and how it went`() {
         val execution = executionOf(experiment)
+
         ApiTest
             .requestJson()
             .get("/api/v1/experiments/$experiment/scenarios/0")
@@ -104,6 +107,7 @@ class ScenarioDetailTest {
     @Test
     fun `serves only the scenario's own log lines, once the execution has ended`() {
         val execution = executionOf(experiment)
+
         ApiTest.requestJson().get("/api/v1/experiments/$experiment/scenarios/0/logs").then().statusCode(404)
 
         dispatcher.certify(execution, 0, UnitOutcome.Failed(UnitFailure.SIMULATION_ERROR, "threw"))

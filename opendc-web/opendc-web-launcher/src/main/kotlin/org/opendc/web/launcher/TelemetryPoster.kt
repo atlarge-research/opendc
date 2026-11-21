@@ -67,6 +67,7 @@ class TelemetryPoster(
         if (report.runs.isEmpty()) {
             return
         }
+
         try {
             val request =
                 HttpRequest

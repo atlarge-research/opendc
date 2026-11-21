@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const noop = () => {}
 
-// The menu renders only once both /config and /me have answered.
+// The menu renders once /me has answered.
 function mockSession() {
     const profile = {
         displayName: "Developer",
@@ -26,17 +26,10 @@ function mockSession() {
             },
         ],
     }
-    vi.stubGlobal(
-        "fetch",
-        vi.fn(async (input: RequestInfo | URL) => {
-            const url = String(input)
-            const body = url.endsWith("/config") ? { auth: { type: "anonymous" } } : profile
-            return new Response(JSON.stringify(body), {
-                status: 200,
-                headers: { "Content-Type": "application/json" },
-            })
-        }),
-    )
+
+    const answer = async () =>
+        new Response(JSON.stringify(profile), { status: 200, headers: { "Content-Type": "application/json" } })
+    vi.stubGlobal("fetch", vi.fn(answer))
 }
 
 function mockSystemPrefersDark(prefersDark: boolean) {
@@ -66,6 +59,7 @@ async function openUserDrawer() {
             </MantineProvider>
         </QueryClientProvider>,
     )
+
     const user = userEvent.setup()
     await user.click(await screen.findByRole("button", { name: "Open account menu" }))
     return user
@@ -83,20 +77,26 @@ afterEach(() => {
 describe("user drawer color scheme toggle", () => {
     it("starts from the system preference when it is dark", async () => {
         mockSystemPrefersDark(true)
+
         await openUserDrawer()
+
         expect(await findToggle("light")).toBeInTheDocument()
     })
 
     it("starts from the system preference when it is light", async () => {
         mockSystemPrefersDark(false)
+
         await openUserDrawer()
+
         expect(await findToggle("dark")).toBeInTheDocument()
     })
 
     it("flips the color scheme when the toggle is clicked", async () => {
         mockSystemPrefersDark(false)
         const user = await openUserDrawer()
+
         await user.click(await findToggle("dark"))
+
         expect(document.documentElement.dataset.mantineColorScheme).toBe("dark")
         expect(await findToggle("light")).toBeInTheDocument()
     })

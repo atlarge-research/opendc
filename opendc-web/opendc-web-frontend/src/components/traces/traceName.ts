@@ -1,5 +1,5 @@
-// The server's rule for a trace name, checked after the same trim and lower-casing it applies, so
-// "MyTrace" is accepted while "My Trace" is refused for the space.
+// The server's rule for a trace name, applied after the same trim and lower-casing: "MyTrace" is
+// accepted, "My Trace" is refused for its space.
 const MAX_NAME_LENGTH = 100
 
 const USABLE_NAME = new RegExp(`^[a-z0-9][a-z0-9._-]{0,${MAX_NAME_LENGTH - 1}}$`)

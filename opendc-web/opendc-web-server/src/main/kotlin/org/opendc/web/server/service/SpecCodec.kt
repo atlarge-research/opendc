@@ -66,6 +66,7 @@ class SpecCodec {
         ((document as? JsonObject)?.get("topologies") as? JsonArray)?.forEachIndexed { index, topology ->
             requireDataCenterForm(topology, "topologies[$index].")
         }
+
         val spec = decode("experiment") { strict.decodeFromJsonElement<ExperimentSpec>(document) }
         return spec.copy(topologies = spec.topologies.map { dataCenterForm(it) }.toSet())
     }

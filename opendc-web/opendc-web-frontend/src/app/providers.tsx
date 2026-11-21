@@ -10,22 +10,25 @@ import { Notifications } from "@mantine/notifications"
 import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { type ReactNode, useState } from "react"
 
-export function Providers({ children }: { children: ReactNode }) {
-    const [queryClient] = useState(() => {
-        // A 401 anywhere means the session ended, so the profile that decides what is shown is refetched.
-        const client: QueryClient = new QueryClient({
-            defaultOptions: { queries: { refetchOnWindowFocus: false } },
-            queryCache: new QueryCache({
-                onError: (error, query) => {
-                    const aboutCaller = query.queryKey[0] === meKeys.profile[0]
-                    if (error instanceof ApiError && error.problem.status === 401 && !aboutCaller) {
-                        void client.invalidateQueries({ queryKey: meKeys.profile })
-                    }
-                },
-            }),
-        })
-        return client
+/** A 401 on any query but the caller's own means the session ended, so the profile is refetched. */
+function newQueryClient(): QueryClient {
+    const client: QueryClient = new QueryClient({
+        defaultOptions: { queries: { refetchOnWindowFocus: false } },
+        queryCache: new QueryCache({
+            onError: (error, query) => {
+                const aboutCaller = query.queryKey[0] === meKeys.profile[0]
+                if (error instanceof ApiError && error.problem.status === 401 && !aboutCaller) {
+                    void client.invalidateQueries({ queryKey: meKeys.profile })
+                }
+            },
+        }),
     })
+    return client
+}
+
+export function Providers({ children }: { children: ReactNode }) {
+    const [queryClient] = useState(newQueryClient)
+
     return (
         <QueryClientProvider client={queryClient}>
             <MantineProvider theme={theme} defaultColorScheme="auto">

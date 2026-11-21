@@ -51,11 +51,10 @@ export function useDeleteTrace() {
     })
 }
 
-export function useShares(traceId: string, enabled: boolean) {
+export function useShares(traceId: string) {
     return useQuery({
         queryKey: traceKeys.shares(traceId),
         queryFn: () => apiRequest<TraceShare[]>(`api/v1/traces/${traceId}/shares`),
-        enabled,
     })
 }
 
@@ -72,7 +71,7 @@ export function useRevokeShare(traceId: string) {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (handle: string) =>
-            apiRequest<void>(`api/v1/traces/${traceId}/shares/${handle}`, { method: "DELETE" }),
+            apiRequest<void>(`api/v1/traces/${traceId}/shares/${encodeURIComponent(handle)}`, { method: "DELETE" }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: traceKeys.shares(traceId) }),
     })
 }

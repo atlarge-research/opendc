@@ -38,8 +38,8 @@ import java.util.concurrent.atomic.AtomicLong
 private const val REFRESH_INTERVAL = "15s"
 
 /**
- * The state of the queue and the platform, read from Postgres on a timer and held, so a scrape never
- * queries the database. Every replica reports the same numbers, so dashboards take the max.
+ * The queue, counted from the database on a timer so a scrape never queries it, and the platform's
+ * cores as the dispatcher reports them. Every replica reports the same numbers, so dashboards take the max.
  *
  * Nothing injects this, so it must start eagerly or the gauges would not exist until a refresh.
  */
@@ -57,6 +57,7 @@ class ExecutionGauges(
             Gauge.builder("opendc.executions", value) { it.get().toDouble() }.tag("state", state.name.lowercase()).register(registry)
         }
         Gauge.builder("opendc.units.queued", queuedUnits) { it.get().toDouble() }.register(registry)
+
         Gauge.builder("opendc.platform.cores.total", dispatcher) { it.capacity().totalCores.toDouble() }.register(registry)
         Gauge.builder("opendc.platform.cores.allocated", dispatcher) { it.capacity().allocatedCores.toDouble() }.register(registry)
     }

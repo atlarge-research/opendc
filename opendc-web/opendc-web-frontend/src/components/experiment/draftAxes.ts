@@ -1,4 +1,4 @@
-import { topologyLabel } from "@/components/experiment/axisLabels"
+import { topologyLabel, workloadLabel } from "@/components/experiment/axisLabels"
 import type { CatalogEntry, TopologyTemplate } from "@/lib/api/types"
 import {
     type AllocationPolicySpec,
@@ -22,7 +22,8 @@ export interface AxisBinding<T> {
 
 const KEPT = "kept:"
 
-// Entries the editor has no name for are kept as their own choice, so an edit never drops them.
+// Entries the editor has no name for are kept as their own choice, so an edit never drops them. Named
+// entries are kept too and only a newly chosen name is made, so fields the editor does not show survive.
 function bindAxis<T>(
     entries: T[],
     nameOf: (entry: T) => string | undefined,
@@ -31,9 +32,14 @@ function bindAxis<T>(
     catalog: AxisChoice[],
 ): AxisBinding<T> {
     const kept = new Map<string, T>()
+    const named = new Map<string, T>()
     const selected = entries.map((entry, index) => {
         const name = nameOf(entry)
-        if (name !== undefined) return name
+        if (name !== undefined) {
+            if (!named.has(name)) named.set(name, entry)
+            return name
+        }
+
         const key = `${KEPT}${index}`
         kept.set(key, entry)
         return key
@@ -44,7 +50,7 @@ function bindAxis<T>(
         choices: [...catalog, ...[...kept].map(([value, entry]) => ({ value, label: labelOf(entry) }))],
         rebuild: (values) =>
             values.flatMap((value) => {
-                const entry = kept.get(value) ?? make(value)
+                const entry = kept.get(value) ?? named.get(value) ?? make(value)
                 return entry === undefined ? [] : [entry]
             }),
     }
@@ -58,8 +64,8 @@ export function catalogChoices(entries: CatalogEntry[]): AxisChoice[] {
     }))
 }
 
-// Experiments copy their topology, so it is matched to a template by content. Both arrive in the
-// server's canonical field order, so stringifying compares soundly; a mismatch only shows it unsaved.
+// An experiment holds a copy of its topology, so it is matched to a template by content. Both arrive
+// in the server's canonical field order, which makes comparing their JSON text sound.
 function documentKey(topology: TopologySpec): string {
     return JSON.stringify(topology)
 }
@@ -86,7 +92,7 @@ export function bindWorkloads(entries: WorkloadSpec[], traces: CatalogEntry[]): 
         entries,
         (workload) =>
             workload.type === "trace" && workload.source.type === "named" ? workload.source.name : undefined,
-        (workload) => (workload.type === "inline" ? "Inline task list" : "Workload from a URI"),
+        workloadLabel,
         (value) => ({ type: "trace", source: { type: "named", name: value } }),
         catalogChoices(traces),
     )
@@ -111,7 +117,7 @@ export function bindFailureModels(entries: FailureModelSpec[], prefabs: CatalogE
     return bindAxis(
         entries,
         (model) => (model.type === "none" ? NO_FAILURES : model.type === "prefab" ? model.prefabName : undefined),
-        (model) => (model.type === "traceBased" ? "Failures from a trace" : "Custom failure model"),
+        (model) => (model.type === "trace" ? "Failures from a trace" : "Custom failure model"),
         (value) => (value === NO_FAILURES ? { type: "none" } : { type: "prefab", prefabName: value }),
         [
             {

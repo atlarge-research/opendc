@@ -46,6 +46,7 @@ class CatalogsResourceTest {
     @Test
     fun `catalogs lists every catalog name`() {
         val names = getArray("/api/v1/catalogs").map { it.jsonPrimitive.content }
+
         assertEquals(
             listOf("schedulers", "failure-prefabs", "power-models", "battery-policies", "export-columns", "host-templates"),
             names,
@@ -85,6 +86,7 @@ class CatalogsResourceTest {
             listOf("compute-epyc", "compute-xeon", "memory-node", "gpu-a100", "edge-node"),
             templates.map { it.jsonObject.getValue("id").jsonPrimitive.content },
         )
+
         for (template in templates) {
             val topology =
                 buildJsonObject {

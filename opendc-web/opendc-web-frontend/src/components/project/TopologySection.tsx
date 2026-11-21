@@ -22,9 +22,10 @@ export function TopologySection({ projectId, templates }: { projectId: Id; templ
             onSubmit: (name) => create.mutate({ name, topology: newTopology() }, { onError: notifyProblem }),
         })
 
-    // The server validates, and converts a legacy document with the simulator's own conversion.
+    // The server validates the document and converts a legacy one, so only its outline is checked here.
     const importFile = async (file: File | null) => {
         if (!file) return
+
         try {
             const document: unknown = JSON.parse(await file.text())
             if (typeof document !== "object" || document === null || Array.isArray(document)) {

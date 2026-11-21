@@ -1,6 +1,6 @@
 import { meKeys } from "@/lib/api/account"
 import { ApiError, apiRequest, problemOf } from "@/lib/api/client"
-import type { Account, ApiProblem, Billing, Handle, UserProfile } from "@/lib/api/types"
+import type { Account, ApiProblem, Handle, UserProfile } from "@/lib/api/types"
 import { useQuery } from "@tanstack/react-query"
 
 export interface AuthSession {
@@ -18,17 +18,19 @@ export type AuthState =
     | { status: "signedIn"; session: AuthSession }
 
 /**
- * A refused /me is signed out (401) or deactivated (403). Any other failure is its own state, or the
- * app would sit on a spinner after one failed request.
+ * A refused /me means signed out (401) or deactivated (403). Any other failure is its own state, so one
+ * failed request cannot leave the app on a spinner; once a profile has loaded, a failed refresh keeps
+ * the person signed in.
  */
 export function authStateOf(profile: UserProfile | undefined, error: unknown): AuthState {
     if (error !== null && error !== undefined) {
         const status = error instanceof ApiError ? error.problem.status : 0
         if (status === 401) return { status: "signedOut" }
         if (status === 403) return { status: "deactivated" }
-        return { status: "unavailable", problem: problemOf(error) }
+        if (profile === undefined) return { status: "unavailable", problem: problemOf(error) }
     }
     if (profile === undefined) return { status: "loading" }
+
     switch (profile.handle.type) {
         case "provisional":
             return { status: "needsHandle", profile }
@@ -56,12 +58,4 @@ export function useAuth(): AuthState & { retry: () => void } {
         retry: false,
     })
     return { ...authStateOf(profile.data, profile.error), retry: () => void profile.refetch() }
-}
-
-export function useBilling(enabled: boolean) {
-    return useQuery({
-        queryKey: meKeys.billing,
-        queryFn: () => apiRequest<Billing>("api/v1/me/billing"),
-        enabled,
-    })
 }

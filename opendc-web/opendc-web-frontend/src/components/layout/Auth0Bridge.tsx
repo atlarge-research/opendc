@@ -4,7 +4,6 @@ import { PageLoader } from "@/components/layout/PageLoader"
 import { meKeys } from "@/lib/api/account"
 import { setAuthHeaders } from "@/lib/api/client"
 import { type SessionControls, SessionProvider } from "@/lib/auth/session"
-import { config } from "@/lib/config"
 import { useAuth0 } from "@auth0/auth0-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { type ReactNode, useEffect, useState } from "react"
@@ -26,6 +25,8 @@ export function Auth0Bridge({ children }: Readonly<{ children: ReactNode }>) {
                 : async () => ({}),
         )
         setWired(true)
+
+        // Anything fetched under the previous credentials is stale.
         void queryClient.invalidateQueries({ queryKey: meKeys.profile })
     }, [isLoading, isAuthenticated, getAccessTokenSilently, queryClient])
 
@@ -37,9 +38,10 @@ export function Auth0Bridge({ children }: Readonly<{ children: ReactNode }>) {
             void loginWithRedirect({ appState: { returnTo: window.location.pathname + window.location.search } }),
         signOut: () => {
             queryClient.clear()
-            void logout({ logoutParams: { returnTo: `${window.location.origin}${config.basePath}/` } })
+            void logout({ logoutParams: { returnTo: window.location.origin } })
         },
         hint: { nickname: user?.nickname ?? "", name: user?.name ?? "" },
     }
+
     return <SessionProvider value={controls}>{children}</SessionProvider>
 }

@@ -143,6 +143,7 @@ internal fun parseSubmission(result: CommandResult): Submission {
             return Submission.Queued(id)
         }
     }
+
     val message = result.stderr.trim().ifEmpty { result.stdout.trim() }
     val permanent = PERMANENT_REFUSALS.any { message.contains(it, ignoreCase = true) }
     return if (permanent) Submission.Refused(message) else Submission.Deferred(message)
@@ -184,11 +185,13 @@ internal fun parsePartition(
                     is Partition.Named -> row[0].removeSuffix("*") == partition.name
                 }
             }.toList()
+
     val usable = rows.filter { usable(it[5]) }.distinctBy { it[1] }
     // %C is allocated/idle/other/total.
     val cpus = usable.map { row -> row[2].split('/').map { it.toIntOrNull() ?: 0 } }
     val memory = usable.map { it[3].toDoubleOrNull() ?: 0.0 }
     val free = usable.map { it[4].toDoubleOrNull() ?: 0.0 }
+
     return PartitionView(
         capacity =
             CapacitySnapshot(
@@ -208,6 +211,7 @@ internal fun parseSlurmTime(text: String): TimeCap {
     if (value.equals("infinite", ignoreCase = true) || value.equals("UNLIMITED", ignoreCase = true)) {
         return TimeCap.Unlimited
     }
+
     val days = if ('-' in value) value.substringBefore('-').toInt() else 0
     val clock = value.substringAfter('-').split(':').map { it.toInt() }
     val seconds =
@@ -222,6 +226,7 @@ internal fun parseSlurmTime(text: String): TimeCap {
                 else -> clock[0] * SECONDS_PER_HOUR + clock[1] * SECONDS_PER_MINUTE + clock[2]
             }
         }
+
     return TimeCap.Limited(seconds)
 }
 

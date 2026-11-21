@@ -23,6 +23,7 @@ export function ExecutionLog({ id, available }: Readonly<{ id: string; available
             </Text>
         )
     }
+
     return (
         <Stack gap={4}>
             <Text size="sm" fw={500}>

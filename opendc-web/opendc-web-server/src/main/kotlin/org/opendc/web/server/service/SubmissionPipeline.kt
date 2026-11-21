@@ -84,9 +84,9 @@ data class SubmissionPreview(
 )
 
 /**
- * The write path for experiments. Drafts must strict-parse (an unknown key is a 400) but may
- * carry validation issues while being edited; submission is the gate that requires a clean
- * validate(), freezes the document forever and turns it into queued execution records.
+ * The write path for experiments. Drafts must strict-parse (an unknown key is a 400) but may carry
+ * validation issues while being edited; submitting requires a clean validate(), freezes the document
+ * for good and queues its run units.
  */
 @ApplicationScoped
 class SubmissionPipeline(
@@ -121,6 +121,7 @@ class SubmissionPipeline(
         if (!experiment.isDraft) {
             throw conflict("A submitted experiment can no longer be edited")
         }
+
         val spec = codec.decodeExperiment(document)
         refuseUriReferences(spec)
         applyDraft(experiment, name, spec, author)
@@ -136,7 +137,7 @@ class SubmissionPipeline(
     ): SubmissionPreview {
         val spec = codec.decodeExperiment(document)
         val traces = resolveTraces(spec, caller)
-        val scenarios = spec.expand()
+        val scenarios = spec.expandBounded()
         return SubmissionPreview(
             scenarioCount = scenarios.distinctBy { it.id }.size,
             estimate = estimate(scenarios, traces),
@@ -176,12 +177,14 @@ class SubmissionPipeline(
         if (!experiment.isDraft) {
             throw conflict("This experiment has already been submitted")
         }
+
         val spec = codec.decodeExperiment(codec.parseStored(experiment.spec))
         val issues = spec.validate().toWire() + resolveTraces(spec, submitter).issues
         if (issues.isNotEmpty()) {
             throw invalidDocument("The experiment document is invalid", issues)
         }
-        val scenarios = spec.expand()
+
+        val scenarios = spec.expandBounded()
         if (scenarios.isEmpty()) {
             throw conflict("This experiment expands to no scenarios")
         }
@@ -233,6 +236,7 @@ class SubmissionPipeline(
                 .filterNot { it.state.isTerminal }
                 .mapNotNull { Execution.lockByPublicId(it.publicId) }
         RunUnit.lockQueued(experiment.id)
+
         val units = RunUnit.findByExperiment(experiment.id)
         if (units.all { it.state.isTerminal }) {
             throw conflict("This experiment has already finished")
@@ -240,6 +244,7 @@ class SubmissionPipeline(
         for (unit in units.filterNot { it.state.isTerminal }) {
             unit.state = UnitState.CANCELLED
         }
+
         val onPlatform = mutableListOf<UUID>()
         for (execution in live) {
             when (execution.state) {
@@ -248,6 +253,7 @@ class SubmissionPipeline(
                 ExecutionState.SUCCEEDED, ExecutionState.FAILED, ExecutionState.CANCELLED -> {}
             }
         }
+
         stops.fire(StopRequested(onPlatform))
         experiment.updatedAt = Instant.now()
     }
@@ -264,6 +270,7 @@ class SubmissionPipeline(
         if (experiment.isDraft) {
             throw conflict("A draft experiment has nothing to restart")
         }
+
         val units = RunUnit.findByExperiment(experiment.id).filter { it.scenarioIndex == scenarioIndex }
         if (units.isEmpty()) {
             throw notFound("Scenario")
@@ -271,11 +278,13 @@ class SubmissionPipeline(
         if (units.any { !it.state.isTerminal }) {
             throw conflict("This scenario is still running")
         }
+
         // Whoever submitted the experiment pays for it, retries included.
         when (val submission = experiment.submission) {
             Submission.Draft -> {}
             is Submission.Submitted -> admit(submission.by, units.sumOf { it.quotedSeconds }, Instant.now())
         }
+
         // The earlier attempt's output is about to be overwritten, so no cached reading of it may survive.
         results.forget(experiment.publicId, units)
         for (unit in units) {
@@ -339,10 +348,16 @@ class SubmissionPipeline(
         traces: TraceResolution,
     ): CostEstimate {
         val model = TraceSizeEstimator(config.estimator().toCoefficients())
+        // Every seed of a scenario costs the same, so each scenario is estimated once.
+        val seeds = scenarios.groupBy { it.id }.values
         val seconds =
-            scenarios.sumOf { scenario -> model.estimate(scenario, traceExtentOf(scenario.workload, traces.usable::get)).cpuSeconds }
+            seeds.sumOf { runs ->
+                val scenario = runs.first()
+                runs.size * model.estimate(scenario, traceExtentOf(scenario.workload, traces.usable::get)).cpuSeconds
+            }
+
         return CostEstimate(
-            scenarioCount = scenarios.distinctBy { it.id }.size,
+            scenarioCount = seeds.size,
             estimatedSimulationSeconds = seconds,
             estimatedBudgetSeconds = seconds,
         )
@@ -379,7 +394,8 @@ class SubmissionPipeline(
         author: UserAccount,
     ) {
         val canonical = codec.canonical(spec)
-        val estimate = estimate(spec.expand(), resolveTraces(spec, author))
+        val estimate = estimate(spec.expandBounded(), resolveTraces(spec, author))
+
         experiment.name = name
         experiment.spec = canonical
         experiment.specHash = codec.hash(canonical)
@@ -402,4 +418,22 @@ class SubmissionPipeline(
             row.persist()
         }
     }
+}
+
+/** The most runs one experiment may expand to, so that no document makes the server build billions. */
+private const val MAX_RUNS = 10_000L
+
+/** This experiment's runs, refused with a 400 before expanding when there would be more than [MAX_RUNS]. */
+private fun ExperimentSpec.expandBounded(): List<ScenarioSpec> {
+    val axes = listOf(topologies, workloads, allocationPolicies, failureModels, maxNumFailures, checkpointModels, exportModels)
+    // Saturating at the cap keeps the product from overflowing.
+    val runCount = axes.fold(runs.toLong()) { total, axis -> minOf(total * axis.size, MAX_RUNS + 1) }
+    if (runCount > MAX_RUNS) {
+        throw invalidDocument(
+            "The experiment expands to too many runs",
+            listOf(DocumentIssue("runs", "every combination of the axes, times runs, may come to at most $MAX_RUNS")),
+        )
+    }
+
+    return expand()
 }

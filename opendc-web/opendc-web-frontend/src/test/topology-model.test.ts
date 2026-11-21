@@ -60,6 +60,7 @@ describe("validateTopology", () => {
     it("reports the paths the simulator's own validation reports, through every data center", () => {
         const broken = cluster({ hosts: [host(), host({ cpu: { coreCount: 0, coreSpeed: 1 } })] })
         const spec = { datacenters: [dataCenter([cluster()]), dataCenter([cluster(), broken])] }
+
         expect(paths(spec)).toEqual(["datacenters[1].clusters[1].hosts[1].cpu.coreCount"])
     })
 
@@ -73,6 +74,7 @@ describe("validateTopology", () => {
         const spec = topology([
             cluster({ hosts: [host({ cpuPowerModel: { type: "sqrt", maxPower: "100 W", idlePower: "200 W" } })] }),
         ])
+
         expect(validateTopology(spec)).toContainEqual({
             path: "datacenters[0].clusters[0].hosts[0].cpuPowerModel.maxPower",
             message: "must be >= idlePower",
@@ -82,6 +84,7 @@ describe("validateTopology", () => {
     it("checks a constant model's one draw and a fitted model's own parameter", () => {
         const constant = host({ cpuPowerModel: { type: "constant", power: "a lot" } })
         const mse = host({ cpuPowerModel: { type: "mse", maxPower: "200 W", idlePower: "50 W", calibrationFactor: 0 } })
+
         expect(paths(topology([cluster({ hosts: [constant, mse] })]))).toEqual([
             "datacenters[0].clusters[0].hosts[0].cpuPowerModel.power",
             "datacenters[0].clusters[0].hosts[1].cpuPowerModel.calibrationFactor",
@@ -90,10 +93,13 @@ describe("validateTopology", () => {
 
     it("only validates the gpu power model when the host actually has a gpu", () => {
         const broken = { type: "linear" as const, maxPower: "10 W", idlePower: "90 W" }
+
         expect(validateTopology(topology([cluster({ hosts: [host({ gpuPowerModel: broken })] })]))).toEqual([])
+
         const withGpu = topology([
             cluster({ hosts: [host({ gpu: { coreCount: 6912, coreSpeed: "1.4 GHz" }, gpuPowerModel: broken })] }),
         ])
+
         expect(paths(withGpu)).toContain("datacenters[0].clusters[0].hosts[0].gpuPowerModel.maxPower")
     })
 
@@ -105,6 +111,7 @@ describe("validateTopology", () => {
                 }),
             ],
         }
+
         expect(paths(spec)).toEqual([
             "datacenters[0].clusters[0].hosts[0].cpu.coreSpeed",
             "datacenters[0].powerSource.maxPower",
@@ -125,6 +132,7 @@ describe("issues", () => {
             { path: "datacenters[10].clusters", message: "b" },
             { path: "datacenters[1]", message: "c" },
         ]
+
         expect(issuesUnder(issues, "datacenters[1]").map((issue) => issue.message)).toEqual(["a", "c"])
     })
 
@@ -133,6 +141,7 @@ describe("issues", () => {
             { path: "datacenters[1].clusters[2].hosts[0].count", message: "must be > 0" },
             { path: "datacenters[0].powerSource.maxPower", message: "must be a valid power" },
         ]
+
         expect(brokenDataCenters(issues, 3)).toEqual([0, 1])
         expect(brokenClusters(issues, 1, 3)).toEqual([2])
         expect(brokenClusters(issues, 0, 3)).toEqual([])
@@ -146,6 +155,7 @@ describe("topologyCapacity", () => {
             hosts: [host({ count: 4, cpu: { coreCount: 32, coreSpeed: "3 GHz", count: 2 } })],
         })
         const capacity = topologyCapacity({ datacenters: [dataCenter([big]), dataCenter([cluster()])] })
+
         expect(capacity.dataCenters).toBe(2)
         expect(capacity.hosts).toBe(12 + 1)
         expect(capacity.cores).toBe(3 * 4 * 2 * 32 + 32)
@@ -158,8 +168,11 @@ describe("topologyCapacity", () => {
 
     it("excludes the gpu power model from peak draw when the host has no gpu", () => {
         const gpuPowerModel = { type: "linear" as const, maxPower: "400 W", idlePower: "100 W" }
+
         expect(topologyCapacity(topology([cluster({ hosts: [host({ gpuPowerModel })] })])).peakPowerW).toBe(400)
+
         const withGpu = topology([cluster({ hosts: [host({ gpu: { coreCount: 1, coreSpeed: 1 }, gpuPowerModel })] })])
+
         expect(topologyCapacity(withGpu).peakPowerW).toBe(800)
     })
 
@@ -174,13 +187,16 @@ describe("starterPowerModel", () => {
 
     it("keeps the draw across a change of type and carries only the new type's fields", () => {
         const constant = starterPowerModel("constant", linear)
+
         expect(constant).toEqual({ type: "constant", power: "300 W" })
         expect(starterPowerModel("cubic", constant)).toEqual({ type: "cubic", maxPower: "300 W", idlePower: "300 W" })
     })
 
     it("gives a fitted model a parameter the server accepts", () => {
         expect(starterPowerModel("mse", linear)).toEqual({ ...linear, type: "mse", calibrationFactor: 1 })
+
         const asymptotic = starterPowerModel("asymptotic", starterPowerModel("mse", linear))
+
         expect(asymptotic).toEqual({ ...linear, type: "asymptotic", asymUtil: 0.3 })
         expect(validateTopology(topology([cluster({ hosts: [host({ cpuPowerModel: asymptotic })] })]))).toEqual([])
     })
@@ -191,14 +207,19 @@ describe("supply", () => {
     it("reads an absent, unreadable or simulator-default supply as unlimited rather than as a limit", () => {
         expect(supplyOf(dataCenter([]))).toEqual({ status: "unlimited" })
         expect(supplyOf(dataCenter([], { powerSource: { maxPower: "lots" } }))).toEqual({ status: "unlimited" })
-        const stored = dataCenter([], { powerSource: { maxPower: "9223372036854776.000000 KWatts" } })
+
+        const stored = dataCenter([], { powerSource: { maxPower: "9223372036854775808 W" } })
         expect(supplyOf(stored)).toEqual({ status: "unlimited" })
+
+        const written = dataCenter([], { powerSource: { maxPower: "9223372036854776.000000 KWatts" } })
+        expect(supplyOf(written)).toEqual({ status: "unlimited" })
         expect(UNLIMITED_SUPPLY_W).toBe(2 ** 63)
     })
 
     it("shares one supply between a data center's clusters, never scaled by their copies", () => {
         const copies = cluster({ count: 2, hosts: [host({ count: 2 })] })
         const spec = dataCenter([copies, cluster()], { powerSource: { maxPower: "2 kW" } })
+
         expect(dataCenterHeadroom(spec)).toEqual({
             usedW: 2 * 2 * 400 + 400,
             budget: { status: "limited", watts: 2000 },
@@ -216,6 +237,7 @@ describe("supply", () => {
                 dataCenter([cluster()], { powerSource: { maxPower: "1 kW" } }),
             ],
         }
+
         expect(overBudgetDataCenters(spec)).toEqual([0])
     })
 

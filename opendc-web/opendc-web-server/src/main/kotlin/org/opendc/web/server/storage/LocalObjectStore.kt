@@ -37,6 +37,7 @@ class LocalObjectStore(private val root: Path) : ObjectStore {
     ): Long {
         val target = fileOf(key)
         Files.createDirectories(target.parent)
+
         // Written beside its destination and renamed, so a broken transfer leaves no half a file.
         val spool = Files.createTempFile(target.parent, ".incoming-", ".part")
         try {
@@ -57,6 +58,7 @@ class LocalObjectStore(private val root: Path) : ObjectStore {
     ): InputStream {
         val channel = Files.newByteChannel(fileOf(key))
         channel.position(offset)
+
         return Channels.newInputStream(channel).let { stream ->
             object : InputStream() {
                 private var left = length
@@ -89,6 +91,7 @@ class LocalObjectStore(private val root: Path) : ObjectStore {
         if (!Files.isDirectory(base)) {
             return if (Files.exists(base)) listOf(prefix) else emptyList()
         }
+
         return Files
             .walk(base)
             .use { paths -> paths.toList() }
