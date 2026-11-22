@@ -49,9 +49,10 @@ import org.opendc.sdk.model.workload.mapReferences
  * @property failureModel The failure-injection model applied during the run.
  * @property checkpointModel Optional checkpointing configuration for tasks.
  * @property maxNumFailures The maximum number of failures a task may survive before it is terminated.
- * @property runs The number of independent repetitions of this scenario.
- * @property initialSeed The seed used to derive per-run random seeds.
+ * @property seed The random seed of the run.
  * @property id A stable numeric identifier for the scenario.
+ * @property experimentName The name of the directory this scenario writes its output under when it is simulated on its
+ * own; [ExperimentSpec.expand][org.opendc.sdk.model.experiment.expand] leaves it empty.
  * @property name A human-readable name for the scenario.
  */
 @Serializable

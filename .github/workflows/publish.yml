@@ -79,3 +79,47 @@ jobs:
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
           ORG_GRADLE_PROJECT_centralPortalUsername: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
           ORG_GRADLE_PROJECT_centralPortalPassword: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
+  # Only tagged releases go to PyPI: every upload counts against its 10 GB quota for the project
+  publish-pypi:
+    name: Publish the Python SDK to PyPI
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+    # A maintainer registers the trusted publisher on PyPI once: project opendc-sdk, workflow publish.yml, environment pypi
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version-file: opendc-sdk/opendc-sdk-python/pyproject.toml
+      # --frozen leaves uv.lock as it is; uv prints the version in its PEP 440 form (v3.1.0-rc1 gives 3.1.0rc1)
+      - name: Set the version
+        working-directory: opendc-sdk/opendc-sdk-python
+        run: |
+          VERSION=$(uv version --frozen --short "${GITHUB_REF#refs/tags/v}")
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+      - name: Build the wheel
+        run: ./gradlew :opendc-sdk:opendc-sdk-python:uvBuild "-Pversion=${GITHUB_REF#refs/tags/v}"
+      # A fresh environment with nothing but the wheel, which has to carry its jars
+      - name: Smoke test the wheel
+        working-directory: opendc-sdk/opendc-sdk-python
+        run: |
+          uv run --isolated --no-project --with build/distributions/*.whl python -c \
+            "import importlib.metadata as m, opendc; assert m.version('opendc-sdk') == '${VERSION}'; print(opendc.ghz(3))"
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: opendc-sdk/opendc-sdk-python/build/distributions

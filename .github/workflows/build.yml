@@ -37,6 +37,13 @@ jobs:
 
 #      - name: Install M3SA Python requirements
 #        run: pip install -r opendc-experiments/opendc-experiments-m3sa/src/main/python/requirements.txt
+      # Gradle runs uv for the Python SDK: its checks, its tests and its wheel
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version-file: opendc-sdk/opendc-sdk-python/pyproject.toml
+          enable-cache: true
+          cache-dependency-glob: opendc-sdk/opendc-sdk-python/uv.lock
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
@@ -60,6 +67,12 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           timeout 180 sh -c 'until curl -sf http://localhost:8080/api/v1/config > /dev/null; do sleep 2; done'
           deploy/smoke-test.sh
+      - name: Test the Python SDK against the server
+        if: runner.os == 'Linux'
+        working-directory: opendc-sdk/opendc-sdk-python
+        env:
+          OPENDC_TEST_SERVER: http://localhost:8080
+        run: uv run --locked pytest src/test/python/test_server_live.py
       - name: Show the server log
         if: failure() && runner.os == 'Linux'
         run: cat "$RUNNER_TEMP/opendc-server.log" || true
@@ -68,7 +81,8 @@ jobs:
         uses: mikepenz/action-junit-report@v6
         with:
           check_name: test (Java ${{ matrix.java }})
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          # Every test task, so that the pytest report of the Python SDK is published too
+          report_paths: '**/build/test-results/*/TEST-*.xml'
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload reports
         if: always()
@@ -87,6 +101,7 @@ jobs:
           name: build-${{ matrix.os }}-jdk${{ matrix.java }}
           path: |
             ./**/build/distributions/**/*.zip
+            ./**/build/distributions/**/*.whl
           retention-days: 5
       - name: Upload code coverage
         uses: codecov/codecov-action@v7
