@@ -127,6 +127,10 @@ target
 .claude
 CLAUDE.md
 
+# The documentation site that Zensical builds from docs/, and its build cache.
+/site/
+/.cache/
+
 # Trace files a development server stores on disk.
 opendc-web/opendc-web-server/data/
 

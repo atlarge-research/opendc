@@ -1,60 +1,101 @@
-# OpenDC Documentation
+---
+description: OpenDC is a free and open-source platform for cloud datacenter simulation, aimed at research and education.
+---
 
-OpenDC is a free and open-source platform for cloud datacenter simulation. It models
-compute workloads, scheduling policies, power consumption, carbon emissions, and failures
-using a discrete-event simulation engine.
+# Introduction
 
-This site is split into two kinds of pages:
+OpenDC is a free and open-source platform for simulating cloud datacenters, aimed at both research and education. With
+OpenDC, we describe the design of a datacenter, the workload it serves and the policies that operate it, and simulate
+how they perform together. The simulator reports resource use, energy use and carbon emissions over time, which makes
+OpenDC suitable for studying questions such as how many machines a workload needs, or how much carbon a scheduling
+policy saves.
 
-- **Hand-written guides** (like this one) that explain concepts and workflows.
-- **Generated reference** pages that are produced directly from the source code, so they
-  never drift out of sync with the simulator.
+<div class="grid" markdown>
 
-## Reference
+[![The topology editor of the OpenDC web application](assets/screenshots/topology-editor.webp)](assets/screenshots/topology-editor.webp)
 
-- [Experiment](reference/input/experiment.md) — the JSON schema for an experiment file.
-- [Allocation policies](reference/input/allocation-scheduling.md) — allocation policies, filters and weighers.
-- [Export models](reference/input/export.md) — how and what telemetry is exported.
-- [Workloads](reference/input/workload.md) — workload traces and scaling policies.
-- [Failure models](reference/input/failures.md) — failure and distribution specs.
-- [Checkpointing models](reference/input/checkpointing.md) — checkpointing behaviour.
-- [Output columns](reference/output-columns.md) — the columns of each Parquet output file.
+/// figure-caption
+Designing a datacenter in the web application.
+///
 
-## Regenerating the reference
+[![The results page of the OpenDC web application](assets/screenshots/experiment-results.webp)](assets/screenshots/experiment-results.webp)
 
-The reference pages are generated from the code that defines them. To rebuild them:
+/// figure-caption
+Comparing the scenarios of an experiment.
+///
 
-```bash
-./gradlew generateDocs
-```
+</div>
 
-This rewrites the files under `docs/reference/`. Prose descriptions live in
-`docs/descriptions/*.json` and are merged into the generated tables, so regenerating
-never overwrites hand-written text.
+A study in OpenDC is an *experiment*: a set of datacenter designs, workloads and policies to compare. OpenDC simulates
+every combination of them, each of which is called a *scenario*. Figure 1 shows the design of one datacenter, and
+Figure 2 the results of an experiment with four scenarios. An experiment can also explore phenomena that are costly to
+try on real hardware, such as machine failures or the use of batteries.
 
-### Splitting the input reference across files
+## Ways to use OpenDC
 
-By default the entire experiment schema is written to a single page. To split it,
-create `docs/reference-layout.json` listing which types belong in which file. Files may live in
-subfolders under `docs/reference/`:
+OpenDC has four entry points. All of them accept the same description of an experiment and use the same simulator, so
+an experiment can move from one to another.
 
-```json
-{
-  "files": [
-    { "file": "input/experiment.md", "title": "Experiment input format", "types": ["ExperimentSpec"] },
-    { "file": "input/allocation-scheduling.md", "title": "Allocation Policies", "types": ["AllocationPolicySpec", "HostFilterSpec"] }
-  ]
-}
-```
+<div class="grid cards" markdown>
 
-Listing a sealed type (e.g. `AllocationPolicySpec`) pulls its variants into the same file.
-Any type you do not list goes to `defaultFile` (or, when that is unset, the first file). Links
-between types in different files — including across subfolders — are rewritten automatically.
-Remember to add any new files to the `nav` in `mkdocs.yml`.
+-   :lucide-terminal:{ .lg .middle } **Command line**
 
-## Previewing the site locally
+    ---
 
-```bash
-pip install mkdocs-material
-mkdocs serve
-```
+    Write an experiment as a JSON file and simulate it with the `opendc` command.
+
+    [:octicons-arrow-right-24: Run a first experiment](getting-started/first-experiment.md)
+
+-   :lucide-layout-dashboard:{ .lg .middle } **Web application**
+
+    ---
+
+    Design datacenters and compare scenarios in the browser, alone or as a team.
+
+    [:octicons-arrow-right-24: OpenDC as a service](web/index.md)
+
+-   :lucide-notebook-pen:{ .lg .middle } **Python**
+
+    ---
+
+    Build experiments in Python and receive the results as pandas DataFrames.
+
+    [:octicons-arrow-right-24: Python SDK](python-sdk/index.md)
+
+-   :lucide-braces:{ .lg .middle } **Kotlin and Java**
+
+    ---
+
+    Embed the simulator in a program on the Java virtual machine.
+
+    [:octicons-arrow-right-24: Kotlin SDK](kotlin-sdk/index.md)
+
+</div>
+
+[Entry Points and Use Cases](getting-started/entry-points.md) compares the four and helps to choose between them.
+
+OpenDC is available in two forms. A hosted deployment of the web application runs at
+[app.opendc.org](https://app.opendc.org). The source code of all entry points is in the
+[OpenDC repository](https://github.com/atlarge-research/opendc), to run on a local machine or with Docker.
+
+## Learning more
+
+The design of OpenDC and the research behind it are described in three papers:
+
+- the [vision](https://atlarge-research.com/pdfs/opendc-vision17ispdc_cr.pdf) that started the project;
+- the paper on [OpenDC 2.0](https://atlarge-research.com/pdfs/ccgrid21-opendc-paper.pdf);
+- [OpenDC-STEAM](https://atlarge-research.com/pdfs/2026-ccgrid-steam.pdf), a more recent study that uses OpenDC.
+
+The [opendc-demos](https://github.com/atlarge-research/opendc-demos) repository provides tutorials with example
+experiments and traces.
+
+## OpenDC versions
+
+This documentation describes OpenDC&nbsp;3, the version in active development. Its latest state is on the `master`
+branch of the [OpenDC repository](https://github.com/atlarge-research/opendc).
+
+OpenDC&nbsp;2 is no longer developed. It is maintained on the
+[`OpenDC2-maintenance`](https://github.com/atlarge-research/opendc/tree/OpenDC2-maintenance) branch, and
+[OpenDC 2 Documentation](opendc-2/index.md) describes it. OpenDC&nbsp;3 still runs most experiment files of
+OpenDC&nbsp;2 with `opendc --legacy run`. [Migrating to OpenDC 3](opendc-2/migrating.md) explains how to convert an
+experiment.

@@ -32,6 +32,9 @@ The documentation is divided into several sections:
 
 To build and simulate experiments from Python, install the [Python SDK](opendc-sdk/opendc-sdk-python/README.md) with `pip install opendc-sdk`.
 
+The documentation of OpenDC 3 is written in [`docs/`](docs) and built with [Zensical](https://zensical.org).
+`uvx zensical serve` previews it at `http://localhost:8000`.
+
 You find information about the research projects and publications related to OpenDC in the [research section](https://opendc.org/research/publications).
 
 The source code for the website is located in the [gh-pages branch](https://github.com/atlarge-research/opendc/tree/gh-pages).

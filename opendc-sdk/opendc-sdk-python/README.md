@@ -167,7 +167,7 @@ succeed raises `RemoteRunFailed`, whose `results` hold the tables of the runs th
 ## Results
 
 `SimulationResults` maps the name of each table, as listed in the
-[output columns](https://github.com/atlarge-research/opendc/blob/master/docs/reference/output-columns.md), to one
+[output reference](https://github.com/atlarge-research/opendc/blob/master/docs/reference/output/index.md), to one
 DataFrame over all runs. Every DataFrame starts with the `scenario` and `seed` of the run. Attributes reach the tables
 in snake_case:
 

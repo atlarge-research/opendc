@@ -1,6 +1,0 @@
-{
-  "WorkloadSpec.pathToFile": "Path to the workload trace directory (a set of Parquet files).",
-  "WorkloadSpec.sampleFraction": "Fraction of tasks to sample from the trace. Must be greater than 0.",
-  "WorkloadSpec.submissionTime": "Optional absolute time (ISO-8601) to align the first task submission to.",
-  "ScenarioTopologySpec.pathToFile": "Path to a topology JSON file describing the clusters and hosts."
-}
