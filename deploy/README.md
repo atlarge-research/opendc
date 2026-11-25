@@ -107,8 +107,8 @@ database and S3-compatible bucket.
 1. Copy `secrets.example.env` to `secrets.env`, and fill in the database, the bucket's credentials
    and a download signing key (`openssl rand -base64 32`).
 2. In `server.env`, set the bucket's endpoint as pods and browsers reach it, the Auth0 settings
-   above, the launcher image, the shape of one execution (`SLOT_CORES` and `SLOT_MEMORY_MB`, which
-   should fit one node) and how many executions may run at once.
+   above, the launcher image, the most one execution may use (`SLOT_CORES` and `SLOT_MEMORY_MB`)
+   and how many executions may run at once.
 3. In `ingress.yaml`, set your host, ingress class and TLS secret. In `kustomization.yaml`, pin the
    server image to the launcher image's version.
 4. Run `kubectl apply -k deploy/kubernetes`, and watch `kubectl -n opendc get jobs,pods` while an
@@ -119,9 +119,14 @@ and download results directly. Execution pods must reach the bucket too; they re
 write their outputs through signed URLs, so they need no credentials of their own.
 
 The server refuses to start on Kubernetes with local storage, or with a telemetry URL that pods
-cannot reach, since executions would have nowhere to read from or report to. Without the optional
-node reader in `rbac.yaml`, the admin panel shows the dispatcher's own ceiling instead of the
-cluster's capacity.
+cannot reach, since executions would have nowhere to read from or report to.
+
+The optional node reader in `rbac.yaml` lets the dispatcher read the nodes and every pod placed on
+them, so it shrinks each execution to what the roomiest node has left beside the pods it already
+runs. Without it, `SLOT_CORES` and `SLOT_MEMORY_MB` are asked for as they are, so they must fit what
+one node has left after its DaemonSets and system pods: on k3s, which reserves nothing, a slot the
+size of a whole machine is never scheduled. The admin panel then shows the dispatcher's own ceiling
+instead of the cluster's capacity.
 
 ## Run on a SLURM cluster
 

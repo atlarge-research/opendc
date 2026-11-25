@@ -30,15 +30,17 @@ subjects:
     name: opendc-server
     namespace: opendc
 ---
-# Optional: reading nodes lets the admin panel report the cluster's capacity. Without this binding
-# the dispatcher logs a warning and reports its own ceiling instead; delete both objects to opt out.
+# Optional: reading the nodes and the pods placed on them lets the dispatcher shape each execution to
+# what a node has left, and the admin panel report the cluster's capacity. Without this binding the
+# dispatcher logs a warning, takes SLOT_CORES and SLOT_MEMORY_MB as they are and reports its own ceiling
+# instead; delete both objects to opt out.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: opendc-node-reader
 rules:
   - apiGroups: [""]
-    resources: ["nodes"]
+    resources: ["nodes", "pods"]
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

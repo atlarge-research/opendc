@@ -160,6 +160,35 @@ internal class JobController(
         client.nodes().resource(node).createOr { it.update() }
     }
 
+    /** Runs a pod that is not this server's on [node], as a DaemonSet does on every node, asking for [cpu] and [memory]. */
+    fun daemon(
+        node: String,
+        cpu: String,
+        memory: String,
+    ) {
+        val pod =
+            PodBuilder()
+                .withNewMetadata()
+                .withName("daemon-$node")
+                .withNamespace(SYSTEM_NAMESPACE)
+                .endMetadata()
+                .withNewSpec()
+                .withNodeName(node)
+                .addNewContainer()
+                .withName("agent")
+                .withNewResources()
+                .addToRequests("cpu", Quantity(cpu))
+                .addToRequests("memory", Quantity(memory))
+                .endResources()
+                .endContainer()
+                .endSpec()
+                .withNewStatus()
+                .withPhase("Running")
+                .endStatus()
+                .build()
+        client.pods().inNamespace(SYSTEM_NAMESPACE).resource(pod).create()
+    }
+
     private fun pod(id: UUID): PodBuilder =
         PodBuilder()
             .withNewMetadata()
@@ -172,5 +201,9 @@ internal class JobController(
 
     private fun write(pod: Pod) {
         client.pods().inNamespace(namespace).resource(pod).createOr { it.update() }
+    }
+
+    private companion object {
+        const val SYSTEM_NAMESPACE = "kube-system"
     }
 }

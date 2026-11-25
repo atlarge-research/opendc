@@ -22,6 +22,8 @@
 
 package org.opendc.web.dispatcher.kubernetes
 
+import io.fabric8.kubernetes.api.model.Container
+import io.fabric8.kubernetes.api.model.ContainerBuilder
 import io.fabric8.kubernetes.api.model.NodeBuilder
 import io.fabric8.kubernetes.api.model.Pod
 import io.fabric8.kubernetes.api.model.PodBuilder
@@ -163,6 +165,22 @@ class ClusterReadingTest {
         assertEquals(64, capacityOf(emptyList(), emptyList(), ceiling).totalCores)
     }
 
+    // A node's DaemonSets and system pods stay for good. This server's own pods make way once they end,
+    // and a pod that has finished or was never placed holds nothing.
+    @Test
+    fun `leaves each node what the pods placed on it, other than this server's own, do not hold`() {
+        val worker = node("worker", ready = true, unschedulable = false)
+        val pods =
+            listOf(
+                placed("worker", cpu = "250m", memory = "512Mi", initCpu = "125m", initMemory = "128Mi"),
+                placed("worker", cpu = "2", memory = "4Gi", labels = mapOf(MANAGED_BY_LABEL to MANAGED_BY)),
+                placed("worker", cpu = "2", memory = "4Gi", phase = "Succeeded"),
+                placed(null, cpu = "2", memory = "4Gi", phase = "Pending"),
+            )
+
+        assertEquals(listOf(PodResources(7.625, 15_744.0)), roomOf(listOf(worker), pods))
+    }
+
     private fun ended(state: JobState): ExitReason = (state as JobState.Ended).outcome.reason
 
     private fun report(
@@ -228,6 +246,43 @@ class ClusterReadingTest {
             .endState()
             .endContainerStatus()
             .endStatus()
+            .build()
+
+    private fun placed(
+        node: String?,
+        cpu: String,
+        memory: String,
+        phase: String = "Running",
+        labels: Map<String, String> = emptyMap(),
+        initCpu: String = "0",
+        initMemory: String = "0",
+    ): Pod =
+        PodBuilder()
+            .withNewMetadata()
+            .withName("pod")
+            .withLabels<String, String>(labels)
+            .endMetadata()
+            .withNewSpec()
+            .withNodeName(node)
+            .addToInitContainers(container("init", initCpu, initMemory))
+            .addToContainers(container("main", cpu, memory))
+            .endSpec()
+            .withNewStatus()
+            .withPhase(phase)
+            .endStatus()
+            .build()
+
+    private fun container(
+        name: String,
+        cpu: String,
+        memory: String,
+    ): Container =
+        ContainerBuilder()
+            .withName(name)
+            .withNewResources()
+            .addToRequests("cpu", Quantity(cpu))
+            .addToRequests("memory", Quantity(memory))
+            .endResources()
             .build()
 
     private fun node(

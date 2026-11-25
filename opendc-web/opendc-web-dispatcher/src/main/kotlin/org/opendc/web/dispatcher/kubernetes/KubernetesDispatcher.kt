@@ -75,9 +75,9 @@ private const val DEFAULT_NAMESPACE = "default"
  * is written onto the Job before the Job is deleted, so whichever replica sees the end reads the same
  * verdict.
  *
- * Once the cluster has listed all its nodes, executions are shaped to fit the node with the most
- * memory, and a pod larger than every node is refused rather than left waiting for a node that will
- * never come.
+ * Once the cluster has listed its nodes and pods, executions are shaped to what the node with the most
+ * memory has left beside the pods already on it, and a pod larger than every node is refused rather than
+ * left waiting for a node that will never come.
  */
 class KubernetesDispatcher internal constructor(
     private val client: KubernetesClient,
@@ -109,9 +109,12 @@ class KubernetesDispatcher internal constructor(
     /** Started by [observe]. Its own store is read for fit, which is complete as soon as it has synced. */
     private val nodeInformer: SharedIndexInformer<Node> = client.nodes().runnableInformer(RESYNC_PERIOD.toMillis())
 
+    /** Started by [observe]. Every pod in the cluster, not only this server's, read for what each node has left. */
+    private val podInformer: SharedIndexInformer<Pod> = client.pods().inAnyNamespace().runnableInformer(RESYNC_PERIOD.toMillis())
+
     override val name: String get() = NAME
 
-    override fun slot(): ExecutionSlot = config.slot.fittedTo(nodeRooms())
+    override fun slot(): ExecutionSlot = config.slot.fittedTo(roomOf(listedNodes(), listedPods()))
 
     override fun admits(
         cores: Int,
@@ -140,10 +143,12 @@ class KubernetesDispatcher internal constructor(
                 .runnableInformer(RESYNC_PERIOD.toMillis())
                 .apply { addEventHandler(handler(::onPod)) }
         informers += nodeInformer.apply { addEventHandler(handler(::onNode)) }
+        informers += podInformer
 
         for (informer in informers) {
             informer.start().exceptionally { failure ->
-                // A cluster that will not list nodes leaves capacity at this dispatcher's own ceiling.
+                // A cluster that will not list nodes leaves capacity at this dispatcher's own ceiling, and one
+                // that will not list pods leaves its nodes looking empty.
                 LOG.warn("An informer could not start: {}", failure.message)
                 null
             }
@@ -155,7 +160,7 @@ class KubernetesDispatcher internal constructor(
     override fun launch(request: LaunchRequest): Launch {
         val job = executionJob(request, config)
         val asked = requestOf(job)
-        val nodes = nodeRooms()
+        val nodes = allocatableOf(listedNodes())
         if (fitsNoNode(asked, nodes)) {
             return Launch.Rejected(tooLargeForNodes(asked, nodes))
         }
@@ -260,8 +265,11 @@ class KubernetesDispatcher internal constructor(
         refreshCapacity()
     }
 
-    /** What each node could give one pod. Empty, which rules nothing out, until the node list has been read in full. */
-    private fun nodeRooms(): List<PodResources> = if (nodeInformer.hasSynced()) allocatableOf(nodeInformer.store.list()) else emptyList()
+    /** Every node. Empty, which rules nothing out, until the node list has been read in full. */
+    private fun listedNodes(): List<Node> = if (nodeInformer.hasSynced()) nodeInformer.store.list() else emptyList()
+
+    /** Every pod, once listed in full. Until then, or where the cluster will not list them, none, so the nodes look empty. */
+    private fun listedPods(): List<Pod> = if (podInformer.hasSynced()) podInformer.store.list() else emptyList()
 
     /** Looks at every known Job again. A failure is logged, not thrown: a periodic task that throws never runs again. */
     private fun scan() {
@@ -283,7 +291,7 @@ class KubernetesDispatcher internal constructor(
         when (val state = jobState(seen.job, jobPods, seen.gone)) {
             is JobState.Pending -> {
                 val asked = requestOf(seen.job)
-                val nodes = nodeRooms()
+                val nodes = allocatableOf(listedNodes())
                 if (fitsNoNode(asked, nodes)) {
                     stop(id, ExitReason.REJECTED, tooLargeForNodes(asked, nodes))
                 } else if (Duration.between(state.since, Instant.now()) >= config.pendingTimeout) {

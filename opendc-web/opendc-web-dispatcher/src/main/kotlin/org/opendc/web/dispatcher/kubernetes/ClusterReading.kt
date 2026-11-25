@@ -22,6 +22,7 @@
 
 package org.opendc.web.dispatcher.kubernetes
 
+import io.fabric8.kubernetes.api.model.Container
 import io.fabric8.kubernetes.api.model.ContainerStateTerminated
 import io.fabric8.kubernetes.api.model.ContainerStatus
 import io.fabric8.kubernetes.api.model.Node
@@ -55,6 +56,9 @@ private val REPELLING_TAINTS = setOf("NoSchedule", "NoExecute")
 
 /** Key prefix of the taints Kubernetes sets while a node condition lasts, such as a cordon. */
 private const val CONDITION_TAINTS = "node.kubernetes.io/"
+
+/** Pod phases that hold nothing on a node any more. */
+private val FINISHED = setOf("Succeeded", "Failed")
 
 /** Cores and memory at the scale of one pod: what a pod requests, or the most a node can give one. */
 internal data class PodResources(
@@ -174,22 +178,53 @@ internal fun capacityOf(
 }
 
 /**
- * The most each node could give one of this server's pods, were the node empty. A node that is down,
- * cordoned or under pressure takes pods again once that passes, so it counts; only a taint an operator
- * set keeps the pods off a node for good.
+ * The most each node could give one of this server's pods, were the node empty. A pod is refused for
+ * good only against this, since the pods on a node may yet leave and only what no waiting changes may
+ * refuse work.
  */
-internal fun allocatableOf(nodes: List<Node>): List<PodResources> =
-    nodes.filterNot(::repelsForGood).map { node ->
+internal fun allocatableOf(nodes: List<Node>): List<PodResources> = roomOf(nodes, pods = emptyList())
+
+/**
+ * What each node has left for one of this server's pods once the [pods] placed on it take what they
+ * request. A node is never empty: its DaemonSets and system pods stay, and where nothing is reserved, as
+ * on k3s, its allocatable is the whole machine, so a pod sized to that is never placed. This server's own
+ * pods make way once they end, and a finished or unplaced pod holds nothing.
+ *
+ * A node that is down, cordoned or under pressure takes pods again once that passes, so it counts; only a
+ * taint an operator set keeps the pods off a node for good.
+ */
+internal fun roomOf(
+    nodes: List<Node>,
+    pods: List<Pod>,
+): List<PodResources> {
+    val held = pods.filter(::holdsItsNode).groupBy { it.spec.nodeName }
+    return nodes.filterNot(::repelsForGood).map { node ->
         val allocatable = node.status?.allocatable.orEmpty()
-        PodResources(amount(allocatable["cpu"]), amount(allocatable["memory"]) / BYTES_PER_MB)
+        val taken = requestOf(held[node.metadata.name].orEmpty().flatMap(::containersOf))
+        PodResources(
+            cores = (amount(allocatable["cpu"]) - taken.cores).coerceAtLeast(0.0),
+            memoryMb = (amount(allocatable["memory"]) / BYTES_PER_MB - taken.memoryMb).coerceAtLeast(0.0),
+        )
     }
+}
 
 private fun repelsForGood(node: Node): Boolean =
     node.spec?.taints.orEmpty().any { it.effect in REPELLING_TAINTS && !it.key.orEmpty().startsWith(CONDITION_TAINTS) }
 
+/** Whether [pod] holds part of a node that this server cannot count on getting back. */
+private fun holdsItsNode(pod: Pod): Boolean =
+    !pod.spec?.nodeName.isNullOrEmpty() &&
+        pod.status?.phase !in FINISHED &&
+        pod.metadata.labels.orEmpty()[MANAGED_BY_LABEL] != MANAGED_BY
+
+/** Every container [pod] declares, init containers included, which never makes a node look roomier than it is. */
+private fun containersOf(pod: Pod): List<Container> = pod.spec?.initContainers.orEmpty() + pod.spec?.containers.orEmpty()
+
 /** What [job]'s pod requests, which, with its requests equal to its limits, is also all it is given. */
-internal fun requestOf(job: Job): PodResources {
-    val requests = job.spec?.template?.spec?.containers.orEmpty().map { it.resources?.requests.orEmpty() }
+internal fun requestOf(job: Job): PodResources = requestOf(job.spec?.template?.spec?.containers.orEmpty())
+
+private fun requestOf(containers: List<Container>): PodResources {
+    val requests = containers.map { it.resources?.requests.orEmpty() }
     return PodResources(requests.sumOf { amount(it["cpu"]) }, requests.sumOf { amount(it["memory"]) } / BYTES_PER_MB)
 }
 
@@ -211,9 +246,9 @@ internal fun tooLargeForNodes(
         "more than ${cpuAmount(nodes.maxOf { it.cores })} cpu and ${nodes.maxOf { it.memoryMb }.toLong()} MB allocatable"
 
 /**
- * This slot shrunk to the node in [nodes] with the most memory, since a bag packed larger than every
- * node is never scheduled, and capped at that node's memory for a unit too large for the slot. With no
- * node visible, nothing is ruled out.
+ * This slot shrunk to what the node in [nodes] with the most memory has to give, since a bag packed
+ * larger than every node is never scheduled, and capped at that memory for a unit too large for the
+ * slot. With no node visible, nothing is ruled out.
  */
 internal fun ExecutionSlot.fittedTo(nodes: List<PodResources>): ExecutionSlot {
     if (nodes.isEmpty()) {

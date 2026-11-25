@@ -146,8 +146,8 @@ To deploy it:
 1. Copy `secrets.example.env` to `secrets.env`. Fill in the database, the credentials of the bucket and a signing key
    for download links, which `openssl rand -base64 32` generates.
 2. In `server.env`, set the endpoint of the bucket as pods and as browsers reach it, the Auth0 settings, and the
-   launcher image. Also set the shape of one execution, `SLOT_CORES` and `SLOT_MEMORY_MB`, which should fit one node,
-   and the number of executions that may run at once.
+   launcher image. Also set the most one execution may use, `SLOT_CORES` and `SLOT_MEMORY_MB`, and the number of
+   executions that may run at once.
 3. In `ingress.yaml`, set the host, the ingress class and the TLS secret. In `kustomization.yaml`, pin the server image
    to the version of the launcher image.
 4. Run `kubectl apply -k deploy/kubernetes`.
@@ -157,6 +157,12 @@ To deploy it:
 Execution pods read their inputs and write their outputs through signed URLs, so they need to reach the bucket but hold
 no credentials. The server refuses to start on Kubernetes with local storage, or with a telemetry address that pods
 cannot reach, because executions would have nowhere to read from or report to.
+
+The optional node reader in `rbac.yaml` lets the dispatcher read the nodes and every pod placed on them. It then shrinks
+each execution to what the roomiest node has left beside the pods it already runs. Without the node reader, an
+execution asks for `SLOT_CORES` and `SLOT_MEMORY_MB` as they are, so they have to fit what one node has left after its
+DaemonSets and system pods. On k3s, which reserves nothing, a slot the size of a whole machine waits for a node that
+never comes.
 
 ## With a SLURM cluster
 

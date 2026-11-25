@@ -308,6 +308,22 @@ class KubernetesDispatcherTest {
         assertEquals(ExecutionSlot(2, 4096.0, TimeCap.Unlimited, MemoryCap.Limited(4096.0)), dispatcher.slot())
     }
 
+    // Where nothing is reserved, as on k3s, a node's allocatable is the whole machine, and every node runs
+    // pods that are not this server's. A pod sized to a whole node is never placed: the scheduler reports
+    // "Insufficient cpu" on every node until the pod's time to start runs out.
+    @Test
+    fun `packs executions no larger than what the roomiest node has left beside the pods already on it`() {
+        val dispatcher = dispatcher()
+        for (node in listOf("worker-1", "worker-2", "worker-3")) {
+            cluster.node(node, cpu = "4", memory = "16Gi")
+            cluster.daemon(node, cpu = "100m", memory = "128Mi")
+        }
+
+        awaitMemoryCap(dispatcher, MemoryCap.Limited(16_256.0))
+
+        assertEquals(ExecutionSlot(3, 8192.0, TimeCap.Unlimited, MemoryCap.Limited(16_256.0)), dispatcher.slot())
+    }
+
     // An operator's taint keeps this server's pods off a node for good; a cordon only for now.
     @Test
     fun `gives one execution at most the memory of the largest node its pods could ever be placed on`() {
