@@ -137,16 +137,16 @@ public class ScenarioBuilder {
     /** The maximum number of failures a task may survive before it is terminated. */
     public var maxNumFailures: Int = 10
 
-    /** The number of independent repetitions of this scenario. */
-    public var runs: Int = 1
-
-    /** The seed used to derive per-run random seeds. */
+    /** The random seed of the run. */
     public var seed: Long = 0
 
     /** A stable numeric identifier for the scenario. */
     public var id: Int = -1
 
-    /** A human-readable name for the scenario. */
+    /**
+     * The name of the directory this scenario writes its output under when it is simulated on its own;
+     * [ExperimentSpec.expand][org.opendc.sdk.model.experiment.expand] leaves it empty.
+     */
     public var experimentName: String = ""
 
     public fun topology(topology: TopologySpec) {

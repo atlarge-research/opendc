@@ -6,7 +6,6 @@ plugins {
 }
 
 dependencies {
-    api(libs.jackson.annotations)
     api(projects.opendc.opendcCommon)
     implementation(libs.kotlinx.serialization.json)
 
@@ -16,6 +15,6 @@ dependencies {
     testImplementation(project(":opendc-trace:opendc-trace-parquet"))
 
     implementation(project(mapOf("path" to ":opendc-trace:opendc-trace-api")))
-    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
-    implementation(project(mapOf("path" to ":opendc-simulator:opendc-simulator-failure")))
+    api(project(mapOf("path" to ":opendc-simulator:opendc-simulator-compute")))
+    api(project(mapOf("path" to ":opendc-simulator:opendc-simulator-failure")))
 }

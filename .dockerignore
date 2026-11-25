@@ -1,12 +1,4 @@
-.git
-.env
-.idea/
-**/out
-*.iml
-.idea_modules/
-
-.gradle
-**/build
-**/node_modules
-
-**/Dockerfile
+# The images package distributions Gradle has already built, so only those are sent to the daemon.
+*
+!opendc-web/opendc-web-server/build/install/opendc-server
+!opendc-web/opendc-web-launcher/build/install/opendc-launcher

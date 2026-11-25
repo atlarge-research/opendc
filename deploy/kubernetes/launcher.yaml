@@ -1,0 +1,22 @@
+# What execution pods run as. They reach their inputs and outputs through signed URLs and report to
+# the server with a token in their manifest, so they need no Kubernetes credentials at all; the
+# account exists only to carry image pull secrets if the launcher image is private.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opendc-launcher
+  namespace: opendc
+automountServiceAccountToken: false
+---
+# Execution pods serve nothing, so nothing may connect to them. Their egress, to the server and the
+# bucket, is left open.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: opendc-executions
+  namespace: opendc
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: opendc-web
+  policyTypes: ["Ingress"]

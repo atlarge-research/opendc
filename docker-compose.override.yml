@@ -1,45 +1,15 @@
-# Docker Compose overrides for development environments
+# Read by `docker compose` alongside docker-compose.yml when working from a checkout: the server
+# image is built from the distribution Gradle produced, and Postgres is reachable from the host.
+#
+#   ./gradlew :opendc-web:opendc-web-server:installDist
+#   docker compose up -d --build
 services:
   server:
+    image: opendc-server:dev
     build:
       context: .
       dockerfile: opendc-web/opendc-web-server/Dockerfile
-      args:
-        OPENDC_AUTH0_DOMAIN: ${OPENDC_AUTH0_DOMAIN:?No Auth0 domain specified}
-        OPENDC_AUTH0_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE:?No Auth0 audience specified}
-        OPENDC_AUTH0_DOCS_CLIENT_ID: ${OPENDC_AUTH0_DOCS_CLIENT_ID}
-    ports:
-      - "8080:8080"
-    environment:
-      SENTRY_ENVIRONMENT: "development"
-
-  runner:
-    build:
-      context: .
-      dockerfile: opendc-web/opendc-web-runner/Dockerfile
-    environment:
-      JAVA_TOOL_OPTIONS: >-
-        -Dlog4j2.rootLogger.level=DEBUG
-        -Dlog4j2.logger.org.opendc.level=DEBUG
-        -Dlog4j2.logger.org.opendc.web.client.level=TRACE
 
   postgres:
     ports:
-      - "5432:5432"
-
-  pgadmin:
-    image: dpage/pgadmin4
-    restart: on-failure
-    networks:
-      - backend
-    depends_on:
-      - postgres
-    ports:
-      - "5050:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-
-volumes:
-  pgadmin:
+      - "127.0.0.1:5432:5432"

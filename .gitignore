@@ -7,6 +7,7 @@ database/opendc_testing/*
 
 # Environment files
 .env
+deploy/kubernetes/secrets.env
 
 # Old credential setup file
 keys.json
@@ -125,6 +126,17 @@ AGENTS.md
 target
 .claude
 CLAUDE.md
+
+# The documentation site that Zensical builds from docs/, and its build cache.
+/site/
+/.cache/
+
+# Trace files a development server stores on disk.
+opendc-web/opendc-web-server/data/
+
+# Local runtime overrides. Quarkus reads this from the working directory and it outranks the
+# packaged settings, so it is where object-storage credentials end up.
+config/application.properties
 opendc-experiments/opendc-experiments-m3sa/src/test/resources/outputs/*
 opendc-experiments/opendc-experiments-m3sa/src/test/resources/outputs
 opendc-experiments/opendc-experiments-m3sa/analysis.txt

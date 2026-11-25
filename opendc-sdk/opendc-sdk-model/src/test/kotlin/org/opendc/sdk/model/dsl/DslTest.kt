@@ -195,7 +195,6 @@ class DslTest {
                 exportModel = ExportSpec(exportInterval = 15.minutes, printFrequency = 12)
                 failureModel = TraceBasedFailureSpec(NamedReference("failure-trace"))
                 maxNumFailures = 5
-                runs = 3
                 seed = 42
             }
 

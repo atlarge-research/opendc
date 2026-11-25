@@ -33,6 +33,7 @@ import com.github.ajalt.mordant.widgets.Panel
 import com.github.ajalt.mordant.widgets.Text
 import com.github.ajalt.mordant.widgets.Viewport
 import org.opendc.cli.config.CliConfig
+import org.opendc.cli.run.Parallelism
 import org.opendc.cli.run.SimulationOverview
 
 /** Panel borders (2) plus one column of horizontal padding on each side, subtracted from the terminal width. */
@@ -82,7 +83,13 @@ internal fun infoPanel(
             )
             row(
                 label(theme, labels.parallelism),
-                value(theme, overview.parallelism),
+                value(
+                    theme,
+                    when (val parallelism = overview.parallelism) {
+                        is Parallelism.Local -> parallelism.runs
+                        Parallelism.Server -> labels.serverParallelism
+                    },
+                ),
                 label(theme, labels.policies),
                 value(theme, overview.policies),
             )

@@ -1,16 +1,18 @@
-# Docker Compose overrides for production environments
+# The public deployment: people sign in through Auth0 and the project website runs beside the app.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.s3.yml -f docker-compose.prod.yml up -d
 services:
   server:
-    image: ghcr.io/atlarge-research/opendc-web-api:${OPENDC_WEB_API_VERSION}
-    ports:
-      - "8080:8080"
     environment:
-      SENTRY_ENVIRONMENT: "production"
-      NEXT_PUBLIC_API_BASE_URL: ${OPENDC_API_BASE_URL}
-      QUARKUS_HTTP_CORS_ORIGINS: https://app.opendc.org
-  runner:
-    image: ghcr.io/atlarge-research/opendc:${OPENDC_RUNNER_VERSION}
+      OPENDC_AUTH_MODE: auth0
+      QUARKUS_OIDC_TENANT_ENABLED: "true"
+      QUARKUS_OIDC_AUTH_SERVER_URL: ${OPENDC_AUTH0_DOMAIN:?Set OPENDC_AUTH0_DOMAIN in .env}
+      QUARKUS_OIDC_TOKEN_AUDIENCE: ${OPENDC_AUTH0_AUDIENCE:?Set OPENDC_AUTH0_AUDIENCE in .env}
+      OPENDC_AUTH_AUTH0_CLIENT_ID: ${OPENDC_AUTH0_CLIENT_ID:?Set OPENDC_AUTH0_CLIENT_ID in .env}
+      OPENDC_AUTH_ADMINS: ${OPENDC_AUTH_ADMINS:-}
+
   website:
-    image: ghcr.io/atlarge-research/opendc-website:${OPENDC_WEBSITE_VERSION}
+    image: ghcr.io/atlarge-research/opendc-website:${OPENDC_WEBSITE_VERSION:?Set OPENDC_WEBSITE_VERSION in .env}
+    restart: on-failure
     ports:
       - "3000:80"

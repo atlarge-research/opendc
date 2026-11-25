@@ -26,13 +26,18 @@ import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.checkpoint.CheckpointModelSpec
 import org.opendc.sdk.model.failure.FailureModelSpec
 import org.opendc.sdk.model.failure.NoFailureSpec
+import org.opendc.sdk.model.failure.mapReferences
+import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.resource.ResourceUse
 import org.opendc.sdk.model.scheduler.AllocationPolicySpec
 import org.opendc.sdk.model.telemetry.ExportSpec
 import org.opendc.sdk.model.topology.TopologySpec
+import org.opendc.sdk.model.topology.mapReferences
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.prefixed
 import org.opendc.sdk.model.workload.WorkloadSpec
+import org.opendc.sdk.model.workload.mapReferences
 
 /**
  * A single, fully-resolved simulation configuration ready to be executed.
@@ -44,9 +49,10 @@ import org.opendc.sdk.model.workload.WorkloadSpec
  * @property failureModel The failure-injection model applied during the run.
  * @property checkpointModel Optional checkpointing configuration for tasks.
  * @property maxNumFailures The maximum number of failures a task may survive before it is terminated.
- * @property runs The number of independent repetitions of this scenario.
- * @property initialSeed The seed used to derive per-run random seeds.
+ * @property seed The random seed of the run.
  * @property id A stable numeric identifier for the scenario.
+ * @property experimentName The name of the directory this scenario writes its output under when it is simulated on its
+ * own; [ExperimentSpec.expand][org.opendc.sdk.model.experiment.expand] leaves it empty.
  * @property name A human-readable name for the scenario.
  */
 @Serializable
@@ -73,4 +79,25 @@ public data class ScenarioSpec(
             addAll(failureModel.validate().prefixed("failureModel"))
             checkpointModel?.let { addAll(it.validate().prefixed("checkpointModel")) }
         }
+
+    /** Every place this scenario refers to a resource, in the order [mapReferences] visits them. */
+    public fun references(): List<ResourceUse> =
+        buildList {
+            mapReferences { use ->
+                add(use)
+                use.reference
+            }
+        }
+
+    /**
+     * This scenario with every resource reference replaced by what [transform] makes of it and every
+     * other field left as it is. The workload is visited first, then the failure model, then the
+     * topology.
+     */
+    public fun mapReferences(transform: (ResourceUse) -> ResourceReference): ScenarioSpec =
+        copy(
+            workload = workload.mapReferences("workload", transform),
+            failureModel = failureModel.mapReferences("failureModel", transform),
+            topology = topology.mapReferences("topology", transform),
+        )
 }

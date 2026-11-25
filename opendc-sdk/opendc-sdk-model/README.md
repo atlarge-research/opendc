@@ -181,7 +181,7 @@ through a [`ResourceProvisioner`]), without changing any data class.
 [`Validatable`]: src/main/kotlin/org/opendc/sdk/model/validation/Validation.kt
 [`ValidationIssue`]: src/main/kotlin/org/opendc/sdk/model/validation/Validation.kt
 [`SdkJson`]: src/main/kotlin/org/opendc/sdk/model/serialization/SdkJson.kt
-[`Experiment`]: src/main/kotlin/org/opendc/sdk/model/experiment/Experiment.kt
-[`Scenario`]: src/main/kotlin/org/opendc/sdk/model/experiment/Scenario.kt
-[`Topology`]: src/main/kotlin/org/opendc/sdk/model/topology/Topology.kt
-[`Workload`]: src/main/kotlin/org/opendc/sdk/model/workload/Workload.kt
+[`Experiment`]: src/main/kotlin/org/opendc/sdk/model/experiment/ExperimentSpec.kt
+[`Scenario`]: src/main/kotlin/org/opendc/sdk/model/experiment/ScenarioSpec.kt
+[`Topology`]: src/main/kotlin/org/opendc/sdk/model/topology/TopologySpec.kt
+[`Workload`]: src/main/kotlin/org/opendc/sdk/model/workload/WorkloadSpec.kt

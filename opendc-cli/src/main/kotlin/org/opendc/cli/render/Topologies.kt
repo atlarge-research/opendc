@@ -69,7 +69,7 @@ internal data class TopologyView(
                 topologies = experiment.topologies.size,
                 workloads = experiment.workloads.size,
                 policies = experiment.allocationPolicies.size,
-                scenarios = experiment.expand().size,
+                scenarios = experiment.expand().distinctBy { it.id }.size,
                 entries = experiment.topologies.mapIndexed { index, topology -> topology.toEntry(index, config) },
             )
     }

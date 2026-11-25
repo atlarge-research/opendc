@@ -1,7 +1,0 @@
-.filterPanel {
-    display: flex;
-}
-
-.filterPanel > button {
-    flex: 1 !important;
-}

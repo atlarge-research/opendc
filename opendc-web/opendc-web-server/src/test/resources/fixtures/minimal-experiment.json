@@ -1,0 +1,41 @@
+{
+    "name": "minimal",
+    "topologies": [
+        {
+            "datacenters": [
+                {
+                    "clusters": [
+                        {
+                            "name": "C0",
+                            "hosts": [
+                                {
+                                    "name": "H0",
+                                    "cpu": { "coreCount": 4, "coreSpeed": "2.5 GHz" },
+                                    "memory": { "size": "16 GiB" }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "workloads": [
+        {
+            "type": "inline",
+            "tasks": [
+                {
+                    "id": 0,
+                    "submissionTime": "0 ms",
+                    "duration": "10 minutes",
+                    "cpuCoreCount": 1,
+                    "cpuCapacity": "1 GHz",
+                    "memory": "1 GiB",
+                    "fragments": [
+                        { "duration": "10 minutes", "cpuUsage": "1 GHz" }
+                    ]
+                }
+            ]
+        }
+    ]
+}

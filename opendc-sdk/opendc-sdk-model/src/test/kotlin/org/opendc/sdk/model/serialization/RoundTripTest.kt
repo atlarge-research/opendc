@@ -178,7 +178,6 @@ class RoundTripTest {
             scenario {
                 id = 7
                 experimentName = "s-7"
-                runs = 2
                 seed = 9
                 maxNumFailures = 3
                 topology(sampleTopology)

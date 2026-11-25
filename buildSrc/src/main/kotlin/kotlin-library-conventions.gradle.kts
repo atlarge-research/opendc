@@ -34,9 +34,8 @@ kotlin {
 
 val javadocJar by tasks.registering(Jar::class) {
     // Note that we publish the Dokka HTML artifacts as Javadoc
-    dependsOn(tasks.dokkaHtml)
     archiveClassifier.set("javadoc")
-    from(tasks.dokkaHtml)
+    from(tasks.dokkaGeneratePublicationHtml.flatMap { it.outputDirectory })
 }
 
 configure<PublishingExtension> {

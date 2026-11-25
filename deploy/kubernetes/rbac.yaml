@@ -1,0 +1,57 @@
+# Exactly what the Kubernetes dispatcher needs in its own namespace: create, watch, annotate and
+# delete its Jobs, and watch their pods and read their logs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: opendc-dispatcher
+  namespace: opendc
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: opendc-dispatcher
+  namespace: opendc
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: opendc-dispatcher
+subjects:
+  - kind: ServiceAccount
+    name: opendc-server
+    namespace: opendc
+---
+# Optional: reading the nodes and the pods placed on them lets the dispatcher shape each execution to
+# what a node has left, and the admin panel report the cluster's capacity. Without this binding the
+# dispatcher logs a warning, takes SLOT_CORES and SLOT_MEMORY_MB as they are and reports its own ceiling
+# instead; delete both objects to opt out.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: opendc-node-reader
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: opendc-node-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: opendc-node-reader
+subjects:
+  - kind: ServiceAccount
+    name: opendc-server
+    namespace: opendc

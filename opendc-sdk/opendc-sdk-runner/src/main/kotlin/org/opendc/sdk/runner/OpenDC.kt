@@ -55,12 +55,22 @@ public class OpenDC private constructor(
     private val parallelism: Int,
 ) {
     /** Expands [experiment] into scenarios and simulates each repetition of each. */
-    public fun simulate(experiment: ExperimentSpec): SimulationReport = run(experiment.name, experiment.expand())
+    public fun simulate(experiment: ExperimentSpec): SimulationReport = simulate(experiment.name, experiment.expand())
 
     /** Simulates a single fully-resolved [scenario]. */
-    public fun simulate(scenario: ScenarioSpec): SimulationReport = run(scenario.experimentName, listOf(scenario))
+    public fun simulate(scenario: ScenarioSpec): SimulationReport = simulate(scenario.experimentName, listOf(scenario))
 
-    private fun run(
+    /**
+     * Simulates an explicit list of fully-resolved [scenarios] that share an [experimentName], which
+     * is what names the output tree they write into.
+     *
+     * This is the entry point for running part of an experiment: a caller that has already decided
+     * which shards belong together passes exactly those, rather than an [ExperimentSpec] whose
+     * expansion has to be arranged to come out equal to them. Each scenario is one `(scenario, seed)`
+     * repetition, so an arbitrary set of them is expressible here and runs at the configured
+     * parallelism.
+     */
+    public fun simulate(
         experimentName: String,
         scenarios: List<ScenarioSpec>,
     ): SimulationReport {

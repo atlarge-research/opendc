@@ -26,6 +26,7 @@ import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.widgets.Text
 import org.opendc.cli.config.CliConfig
+import org.opendc.cli.run.Parallelism
 import org.opendc.cli.run.SimulationOverview
 import java.nio.file.Path
 import kotlin.test.Test
@@ -47,7 +48,7 @@ class DashboardWidgetsTest {
             workloads = 1,
             policies = 4,
             totalTasks = 1234,
-            parallelism = 8,
+            parallelism = Parallelism.Local(8),
             output = Path.of("output"),
             inputRoot = Path.of("."),
         )

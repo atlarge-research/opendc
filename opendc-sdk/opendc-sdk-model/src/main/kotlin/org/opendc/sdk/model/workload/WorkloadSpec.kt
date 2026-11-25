@@ -25,6 +25,8 @@ package org.opendc.sdk.model.workload
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.resource.ResourceRole
+import org.opendc.sdk.model.resource.ResourceUse
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.validateEach
@@ -36,6 +38,17 @@ import org.opendc.sdk.model.validation.validateEach
 public sealed interface WorkloadSpec : Validatable {
     override fun validate(): List<ValidationIssue> = emptyList()
 }
+
+/** This workload with the trace it reads, if any, replaced by what [transform] makes of it. */
+internal fun WorkloadSpec.mapReferences(
+    path: String,
+    transform: (ResourceUse) -> ResourceReference,
+): WorkloadSpec =
+    when (this) {
+        is TraceWorkloadSpec -> copy(source = transform(ResourceUse(ResourceRole.WORKLOAD, "$path.source", source)))
+        is EfficientTraceWorkloadSpec -> copy(source = transform(ResourceUse(ResourceRole.WORKLOAD, "$path.source", source)))
+        is InlineWorkloadSpec -> this
+    }
 
 /**
  * A workload loaded from an external trace resource.

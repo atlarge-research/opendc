@@ -37,6 +37,13 @@ jobs:
 
 #      - name: Install M3SA Python requirements
 #        run: pip install -r opendc-experiments/opendc-experiments-m3sa/src/main/python/requirements.txt
+      # Gradle runs uv for the Python SDK: its checks, its tests and its wheel
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version-file: opendc-sdk/opendc-sdk-python/pyproject.toml
+          enable-cache: true
+          cache-dependency-glob: opendc-sdk/opendc-sdk-python/uv.lock
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
@@ -45,12 +52,37 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
       - name: Build
         run: ./gradlew build assembleDist codeCoverageReport
+      # The suite runs on H2. This runs the server distribution against the PostgreSQL the Ubuntu
+      # image ships (no Docker), which is what checks the schema against the production dialect.
+      - name: Smoke test against PostgreSQL
+        if: runner.os == 'Linux'
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres psql -c "CREATE USER opendc WITH PASSWORD 'opendc'" -c "CREATE DATABASE opendc OWNER opendc"
+          ./gradlew :opendc-web:opendc-web-server:installDist
+          cd opendc-web/opendc-web-server/build/install/opendc-server
+          OPENDC_AUTH_MODE=anonymous \
+            OPENDC_DB_URL=jdbc:postgresql://localhost:5432/opendc OPENDC_DB_USERNAME=opendc OPENDC_DB_PASSWORD=opendc \
+            nohup bin/opendc-server > "$RUNNER_TEMP/opendc-server.log" 2>&1 &
+          cd "$GITHUB_WORKSPACE"
+          timeout 180 sh -c 'until curl -sf http://localhost:8080/api/v1/config > /dev/null; do sleep 2; done'
+          deploy/smoke-test.sh
+      - name: Test the Python SDK against the server
+        if: runner.os == 'Linux'
+        working-directory: opendc-sdk/opendc-sdk-python
+        env:
+          OPENDC_TEST_SERVER: http://localhost:8080
+        run: uv run --locked pytest src/test/python/test_server_live.py
+      - name: Show the server log
+        if: failure() && runner.os == 'Linux'
+        run: cat "$RUNNER_TEMP/opendc-server.log" || true
       - name: Publish report
         if: always()
         uses: mikepenz/action-junit-report@v6
         with:
           check_name: test (Java ${{ matrix.java }})
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          # Every test task, so that the pytest report of the Python SDK is published too
+          report_paths: '**/build/test-results/*/TEST-*.xml'
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload reports
         if: always()
@@ -69,6 +101,7 @@ jobs:
           name: build-${{ matrix.os }}-jdk${{ matrix.java }}
           path: |
             ./**/build/distributions/**/*.zip
+            ./**/build/distributions/**/*.whl
           retention-days: 5
       - name: Upload code coverage
         uses: codecov/codecov-action@v7
@@ -76,17 +109,30 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
   build-docker:
-    name: Build Docker Images
+    name: Build Docker Image (${{ matrix.image }})
     if: github.repository == 'atlarge-research/opendc'
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        image: [ server, launcher ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-      - name: Build Web Server
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: true
+      # The images package the distribution Gradle builds, so the build context is this checkout.
+      - name: Build distribution
+        run: ./gradlew :opendc-web:opendc-web-${{ matrix.image }}:installDist
+      - name: Build image
         uses: docker/build-push-action@v7
         with:
-          file: opendc-web/opendc-web-server/Dockerfile
-      - name: Build Runner
-        uses: docker/build-push-action@v7
-        with:
-          file: opendc-web/opendc-web-runner/Dockerfile
+          context: .
+          file: opendc-web/opendc-web-${{ matrix.image }}/Dockerfile
+          push: false

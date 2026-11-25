@@ -1,0 +1,62 @@
+{
+    "name": "getting-started",
+    "topologies": [
+        {
+            "datacenters": [
+                {
+                    "name": "DC1",
+                    "clusters": [
+                        {
+                            "name": "C01",
+                            "hosts": [
+                                {
+                                    "name": "H01",
+                                    "count": 4,
+                                    "cpu": { "coreCount": 16, "coreSpeed": "2.1 GHz" },
+                                    "memory": { "size": "64 GiB" },
+                                    "cpuPowerModel": { "type": "linear", "idlePower": "32 W", "maxPower": "180 W" }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "workloads": [
+        {
+            "type": "inline",
+            "tasks": [
+                {
+                    "id": 0,
+                    "submissionTime": "0 minutes",
+                    "duration": "10 minutes",
+                    "cpuCoreCount": 2,
+                    "cpuCapacity": "4.2 GHz",
+                    "memory": "2 GiB",
+                    "fragments": [
+                        { "duration": "10 minutes", "cpuUsage": "4.2 GHz" }
+                    ]
+                },
+                {
+                    "id": 1,
+                    "submissionTime": "5 minutes",
+                    "duration": "20 minutes",
+                    "cpuCoreCount": 4,
+                    "cpuCapacity": "8.4 GHz",
+                    "memory": "8 GiB",
+                    "fragments": [
+                        { "duration": "10 minutes", "cpuUsage": "8.4 GHz" },
+                        { "duration": "10 minutes", "cpuUsage": "4.2 GHz" }
+                    ]
+                }
+            ]
+        }
+    ],
+    "allocationPolicies": [
+        { "type": "prefab", "prefabName": "Mem" }
+    ],
+    "exportModels": [
+        { "exportInterval": "1 minutes" }
+    ]
+}

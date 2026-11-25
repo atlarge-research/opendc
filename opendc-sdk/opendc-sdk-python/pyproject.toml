@@ -1,0 +1,70 @@
+[project]
+# The package is imported as `opendc`; that distribution name belongs to another project on PyPI
+name = "opendc-sdk"
+version = "3.0.0.dev0"
+description = "Build and simulate OpenDC datacenter experiments from Python"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "AtLarge Research" }]
+keywords = ["opendc", "datacenter", "simulation", "discrete-event simulation", "cloud computing", "energy", "carbon"]
+# The SPDX `license` above replaces the deprecated license classifier
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: System :: Distributed Computing",
+    "Typing :: Typed",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "jpype1>=1.7",
+    "numpy>=1.23",
+    "pandas>=2.2",
+    "pyarrow>=13",
+]
+
+[project.urls]
+Homepage = "https://opendc.org"
+Documentation = "https://github.com/atlarge-research/opendc/tree/master/opendc-sdk/opendc-sdk-python"
+Repository = "https://github.com/atlarge-research/opendc"
+Issues = "https://github.com/atlarge-research/opendc/issues"
+
+[dependency-groups]
+dev = [
+    "matplotlib>=3.8",
+    "pytest>=8",
+    "ruff>=0.8",
+    "ty>=0.0.89",
+]
+
+[build-system]
+# The backend uv itself bundles, so that building needs no download
+requires = ["uv_build>=0.13.9,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv]
+required-version = ">=0.13.9"
+
+[tool.uv.build-backend]
+module-root = "src/main/python"
+module-name = "opendc"
+
+[tool.pytest.ini_options]
+testpaths = ["src/test/python"]
+# The fault handler of pytest replaces the signal handlers of the embedded JVM
+addopts = "-p no:faulthandler"
+cache_dir = "build/pytest-cache"
+
+[tool.ruff]
+src = ["src/main/python", "src/test/python"]
+line-length = 120
+cache-dir = "build/ruff-cache"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]

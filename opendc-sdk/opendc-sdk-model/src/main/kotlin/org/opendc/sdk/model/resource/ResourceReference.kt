@@ -54,3 +54,24 @@ public data class NamedReference(public val name: String) : ResourceReference
 @Serializable
 @SerialName("uri")
 public data class UriReference(public val uri: String) : ResourceReference
+
+/** What a document uses a resource as, which decides the kind of trace it has to be. */
+public enum class ResourceRole {
+    WORKLOAD,
+    CARBON,
+    FAILURE,
+}
+
+/**
+ * One place a document refers to a resource.
+ *
+ * @property role What the resource is used as there.
+ * @property path Where in the document the reference sits, spelled the way validation issues spell
+ *   paths, such as `workloads[0].source`.
+ * @property reference The reference itself.
+ */
+public data class ResourceUse(
+    public val role: ResourceRole,
+    public val path: String,
+    public val reference: ResourceReference,
+)

@@ -30,9 +30,9 @@ import java.nio.file.Path
 
 /**
  * Runs experiments, decoupling the `run` command from where a simulation actually executes.
- * [LocalBackend] runs it in-process through the SDK; a future remote backend would submit it to an
- * OpenDC server and poll for progress. Both expose the same [SimulationSession], so the command and
- * its dashboard behave identically regardless of where the work happens.
+ * [LocalBackend] runs it in-process through the SDK; [RemoteBackend] submits it to an OpenDC server
+ * and polls for progress. Both expose the same [SimulationSession], so the command and its dashboard
+ * behave identically regardless of where the work happens.
  */
 internal fun interface SimulationBackend {
     /** Resolves [request] and prepares a run without starting it. */
@@ -49,28 +49,42 @@ internal interface SimulationSession {
 }
 
 /**
- * Everything a backend needs to prepare a run. A null [parallelism] lets the backend choose. [writerThreads] is the
- * number of threads that write each of the task and host Parquet files of a run.
+ * Everything a backend needs to prepare a run. A remote backend leaves [parallelism] to the server. [writerThreads] is
+ * the number of threads that write each of the task and host Parquet files of a run.
  */
 internal data class RunRequest(
     val experiment: ExperimentSpec,
     val inputRoot: Path,
     val output: Path,
-    val parallelism: Int?,
+    val parallelism: Int,
     val writerThreads: Int,
     val wantSummary: Boolean,
 )
 
-/** The render-ready result of a completed run: the optional per-run [summary] and the [outputs] location. */
+/** The render-ready result of a completed run: its per-run [summary] and the [outputs] location. */
 internal data class RunOutcome(
-    val summary: RunSummaryView?,
+    val summary: RunSummary,
     val outputs: OutputView,
 )
 
+/** The headline metrics of every run, which only an in-process run that was asked for them collects. */
+internal sealed interface RunSummary {
+    data class Measured(val view: RunSummaryView) : RunSummary
+
+    data object NotMeasured : RunSummary
+}
+
+/** How many runs are simulated at once: a number this machine runs, or whatever the server grants. */
+internal sealed interface Parallelism {
+    data class Local(val runs: Int) : Parallelism
+
+    data object Server : Parallelism
+}
+
 /**
  * The constant facts about a simulation, known before it starts and shown in the dashboard's top
- * panel. A backend computes these once when preparing a run (locally from the resolved experiment; a
- * future remote backend from the API's submission response).
+ * panel. A backend computes these once when preparing a run (locally from the resolved experiment;
+ * remotely from the experiment and the status the server reports once it is submitted).
  *
  * @property name The experiment name (or a placeholder when unset).
  * @property scenarios The number of scenarios the experiment expands to.
@@ -79,7 +93,7 @@ internal data class RunOutcome(
  * @property workloads The number of distinct workloads.
  * @property policies The number of distinct allocation policies.
  * @property totalTasks The total number of tasks across all runs (the progress denominator).
- * @property parallelism The number of runs simulated concurrently.
+ * @property parallelism How many runs are simulated concurrently.
  * @property output The directory Parquet results are written to.
  * @property inputRoot The root against which named/relative references are resolved.
  */
@@ -91,7 +105,7 @@ internal data class SimulationOverview(
     val workloads: Int,
     val policies: Int,
     val totalTasks: Long,
-    val parallelism: Int,
+    val parallelism: Parallelism,
     val output: Path,
     val inputRoot: Path,
 )

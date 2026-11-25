@@ -1,34 +1,34 @@
-FROM eclipse-temurin:21-jdk-jammy
-# Obtain (cache) Gradle wrapper
-COPY gradlew /app/
-COPY gradle /app/gradle
-WORKDIR /app
-RUN ./gradlew --version
+# syntax=docker/dockerfile:1
+#
+# The self-hosted server, with the frontend it serves and the launcher it starts. Build the
+# distribution first, so that the image build needs neither Gradle nor Node:
+#
+#   ./gradlew :opendc-web:opendc-web-server:installDist
+#   docker build -f opendc-web/opendc-web-server/Dockerfile .
+FROM eclipse-temurin:21-jre
 
-# Build project
-ARG OPENDC_AUTH0_DOMAIN
-ARG OPENDC_AUTH0_AUDIENCE
-ARG OPENDC_AUTH0_DOCS_CLIENT_ID
+RUN useradd --system --uid 10001 --home-dir /var/lib/opendc --create-home opendc \
+    && mkdir -p /var/lib/opendc/data /var/lib/opendc/executions \
+    && chown -R 10001:10001 /var/lib/opendc
 
-ENV OPENDC_AUTH0_DOMAIN=$OPENDC_AUTH0_DOMAIN
-ENV OPENDC_AUTH0_AUDIENCE=$OPENDC_AUTH0_AUDIENCE
-ENV OPENDC_AUTH0_DOCS_CLIENT_ID=$OPENDC_AUTH0_DOCS_CLIENT_ID
+COPY opendc-web/opendc-web-server/build/install/opendc-server /opt/opendc
 
-COPY ./ /app/
-RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash && \
-    . ~/.nvm/nvm.sh && \
-    nvm install --lts && \
-    ./gradlew --no-daemon :opendc-web:opendc-web-server:quarkusBuild -Dquarkus.profile=docker
-
-FROM eclipse-temurin:21-jdk-jammy
-COPY --from=0 /app/opendc-web/opendc-web-server/build/quarkus-app /opt/opendc
 WORKDIR /opt/opendc
-CMD java -jar quarkus-run.jar
+USER 10001
 
-LABEL org.opencontainers.image.authors="OpenDC Maintainers <opendc@atlarge-research.com>"
-LABEL org.opencontainers.image.url="https://opendc.org"
-LABEL org.opencontainers.image.documentation="https://opendc.org"
-LABEL org.opencontainers.image.source="https://github.com/atlarge-research/opendc"
-LABEL org.opencontainers.image.title="OpenDC"
-LABEL org.opencontainers.image.description="OpenDC Docker Image"
-LABEL org.opencontainers.image.vendor="AtLarge Research"
+# The server takes a quarter of the container's memory; by default the launchers it starts share half.
+ENV OPENDC_SERVER_OPTS="-XX:MaxRAMPercentage=25" \
+    OPENDC_STORAGE_DIRECTORY=/var/lib/opendc/data \
+    OPENDC_DISPATCHER_LOCAL_WORK_DIR=/var/lib/opendc/executions
+
+# 8080 serves the app; 9000 serves /q/health and /q/metrics to probes and Prometheus.
+EXPOSE 8080 9000
+ENTRYPOINT ["/opt/opendc/bin/opendc-server"]
+
+LABEL org.opencontainers.image.authors="OpenDC Maintainers <opendc@atlarge-research.com>" \
+      org.opencontainers.image.url="https://opendc.org" \
+      org.opencontainers.image.documentation="https://opendc.org" \
+      org.opencontainers.image.source="https://github.com/atlarge-research/opendc" \
+      org.opencontainers.image.title="OpenDC Server" \
+      org.opencontainers.image.description="The OpenDC web server, frontend and local launcher" \
+      org.opencontainers.image.vendor="AtLarge Research"

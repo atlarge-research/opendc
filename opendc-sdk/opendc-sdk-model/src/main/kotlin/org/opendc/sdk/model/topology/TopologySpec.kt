@@ -24,6 +24,9 @@ package org.opendc.sdk.model.topology
 
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import org.opendc.sdk.model.carbon.mapReferences
+import org.opendc.sdk.model.resource.ResourceReference
+import org.opendc.sdk.model.resource.ResourceUse
 import org.opendc.sdk.model.validation.Validatable
 import org.opendc.sdk.model.validation.ValidationIssue
 import org.opendc.sdk.model.validation.validateEach
@@ -71,3 +74,21 @@ public data class TopologySpec(
             }
         }
 }
+
+/**
+ * This topology with each data center's carbon trace replaced by what [transform] makes of it. The
+ * clusters of a document written before data centers existed are not walked: the simulator reads only
+ * data centers, which the conversion has already given their power source.
+ */
+internal fun TopologySpec.mapReferences(
+    path: String,
+    transform: (ResourceUse) -> ResourceReference,
+): TopologySpec =
+    copy(
+        datacenters =
+            datacenters?.mapIndexed { index, dataCenter ->
+                val carbon = dataCenter.powerSource.carbon ?: return@mapIndexed dataCenter
+                val mapped = carbon.mapReferences("$path.datacenters[$index].powerSource.carbon", transform)
+                dataCenter.copy(powerSource = dataCenter.powerSource.copy(carbon = mapped))
+            },
+    )

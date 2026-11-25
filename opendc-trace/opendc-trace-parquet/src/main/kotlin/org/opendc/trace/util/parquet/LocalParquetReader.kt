@@ -50,12 +50,14 @@ public class LocalParquetReader<out T>(
      */
     private val filesIterator =
         if (path.isDirectory()) {
-            Files.list(path)
-                // Hidden files and directories, such as the part files of a writer, are not part of the data
-                .filter { !it.isDirectory() && !it.fileName.toString().startsWith(".") }
-                .sorted()
-                .map { LocalInputFile(it) }
-                .iterator()
+            Files.list(path).use { files ->
+                files
+                    // Hidden files and directories, such as the part files of a writer, are not part of the data
+                    .filter { !it.isDirectory() && !it.fileName.toString().startsWith(".") }
+                    .sorted()
+                    .map { LocalInputFile(it) }
+                    .toList()
+            }.iterator()
         } else {
             listOf(LocalInputFile(path)).iterator()
         }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{ISO8601} %-5level %notEmpty{[scenario=%X{scenario} seed=%X{seed}] }%c{1} - %msg%n%ex"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.apache" level="warn"/>
+        <Logger name="org.apache.hadoop" level="error"/>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
